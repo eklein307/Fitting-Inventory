@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fittings Stockroom</title>
+<style>
+:root {
+  --paper: #edf0f2;
+  --panel: #ffffff;
+  --ink: #1c2226;
+  --muted: #5e6a73;
+  --rule: #cbd2d8;
+  --rule-soft: #e3e7ea;
+  --tile: #f3f5f7;
+  --accent: #1f6fb2;
+  --s116: #6a4fb3;
+  --s18: #0e7c8a;
+  --s14: #a26b00;
+  --sx: #8a949c;
+  --out: #b42318;
+  --low-bg: #fdecea;
+  --ok: #2f7d4a;
+  --band: #e6eaed;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14181b;
+    --panel: #1d2327;
+    --ink: #e6eaed;
+    --muted: #9aa6af;
+    --rule: #39434a;
+    --rule-soft: #2b3338;
+    --band: #252c31;
+    --low-bg: #3a1f1c;
+    --out: #f07467;
+    --ok: #6fc28f;
+    --accent: #6aa9e0;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.wrap { max-width: 1400px; margin: 0 auto; padding: 22px 20px 48px; }
+header.top { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end; justify-content: space-between; }
+h1 { margin: 0; font-size: 30px; line-height: 1.1; font-weight: 750; letter-spacing: -0.015em; }
+.sub { margin: 6px 0 0; color: var(--muted); max-width: 70ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, .btn {
+  font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 7px; padding: 7px 12px; cursor: pointer; line-height: 1.2;
+}
+button:hover, .btn:hover { border-color: var(--muted); }
+button.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+button.primary:hover { opacity: .9; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.count-badge {
+  display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 10px;
+  background: var(--out); color: #fff; font-size: 12px; font-weight: 700; text-align: center;
+}
+.count-badge.zero { background: var(--rule); color: var(--muted); }
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu-list {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 270px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 9px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(20, 30, 40, .16);
+}
+.menu-list button { display: block; width: 100%; text-align: left; border: 0; border-radius: 6px; padding: 8px 10px; }
+.menu-list button:hover { background: var(--band); }
+.menu-list hr { border: 0; border-top: 1px solid var(--rule-soft); margin: 6px 4px; }
+.menu-list .hint { color: var(--muted); font-size: 12px; padding: 4px 10px 6px; margin: 0; }
+
+.controls { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.search { flex: 1 1 320px; max-width: 460px; position: relative; }
+.search input {
+  width: 100%; font: inherit; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+}
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button { border: 0; border-radius: 0; padding: 7px 11px; border-right: 1px solid var(--rule-soft); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+.seg button[aria-pressed="true"] .n { color: inherit; opacity: .8; }
+.seg .n { color: var(--muted); margin-left: 5px; }
+select {
+  font: inherit; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+}
+label.check { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); cursor: pointer; }
+
+.banner {
+  margin-top: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--panel); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.banner.warn { border-color: var(--out); background: var(--low-bg); }
+.banner p { margin: 0; flex: 1 1 300px; }
+[hidden] { display: none !important; }
+
+.table-wrap {
+  margin-top: 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+  overflow-x: auto;
+}
+table.parts { width: 100%; min-width: 1120px; border-collapse: collapse; }
+.parts thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--panel); text-align: left; font-weight: 600;
+  font-size: 12.5px; color: var(--muted); padding: 10px 8px; border-bottom: 1px solid var(--rule);
+}
+.parts th.num, .parts td.num { text-align: center; }
+.parts tr.group td {
+  background: var(--band); font-weight: 650; padding: 7px 12px; border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.parts tr.group .n { font-weight: 400; color: var(--muted); margin-left: 8px; }
+.parts tr.part td { padding: 6px 8px; border-bottom: 1px solid var(--rule-soft); vertical-align: middle; }
+.parts tr.part.is-hidden td { opacity: .5; }
+.parts tr.part.reorder td.status { }
+td.tab { width: 6px; padding: 0 !important; }
+td.tab span { display: block; width: 6px; min-height: 52px; height: 100%; }
+.s116 { background: var(--s116); } .s18 { background: var(--s18); } .s14 { background: var(--s14); } .sx { background: var(--sx); }
+td.pic { width: 104px; }
+.pic .tile { width: 96px; height: 55px; background: var(--tile); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.pic .tile svg { width: 96px; height: 55px; display: block; }
+.pic .tile svg line[stroke="#1f6fb2"] { vector-effect: non-scaling-stroke; stroke-width: 1.6px; stroke-dasharray: 5 3; }
+.pic .tile.empty { color: #8a949c; font-size: 11px; }
+td.id { min-width: 210px; }
+.pn { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.desc { color: var(--ink); }
+.desc .bt { color: var(--accent); font-weight: 600; margin-left: 6px; font-size: 12.5px; }
+.meta { color: var(--muted); font-size: 12.5px; }
+.more-btn { border: 0; background: none; padding: 2px 0; color: var(--accent); font-size: 12.5px; }
+.more-btn:hover { text-decoration: underline; }
+td.size { white-space: nowrap; font-weight: 600; }
+td.end { color: var(--ink); min-width: 110px; }
+td.hex { white-space: nowrap; }
+.hex .h { display: grid; grid-template-columns: 34px auto; column-gap: 4px; font-size: 13px; }
+.hex .h span:nth-child(odd) { color: var(--muted); font-size: 12px; }
+.hex .na { color: var(--muted); }
+input.cell, textarea.cell {
+  font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 6px 8px; width: 100%;
+}
+input.cell::placeholder { color: #9aa4ab; }
+input.cell[type=number] { text-align: center; -moz-appearance: textfield; }
+input.cell[type=number]::-webkit-inner-spin-button, input.cell[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+td.loc { width: 120px; }
+td.min, td.order { width: 74px; }
+td.onhand { width: 128px; }
+.stepper { display: grid; grid-template-columns: 30px 1fr 30px; gap: 4px; }
+.stepper button { padding: 0; height: 32px; font-size: 16px; font-weight: 600; border-radius: 6px; }
+td.status { width: 118px; }
+.chip { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 12.5px; font-weight: 650; white-space: nowrap; }
+.chip.out { background: var(--out); color: #fff; }
+.chip.low { background: var(--low-bg); color: var(--out); border: 1px solid var(--out); }
+.chip.ok { color: var(--ok); border: 1px solid currentColor; }
+.chip.nomin, .chip.uncounted, .chip.unset { color: var(--muted); border: 1px dashed var(--rule); }
+.counted { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3px; white-space: nowrap; }
+tr.detail td { background: var(--tile); padding: 12px 16px 14px 120px; border-bottom: 1px solid var(--rule-soft); }
+@media (prefers-color-scheme: dark) { tr.detail td { background: #232a2f; } }
+.detail-grid { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(260px, 1.2fr); gap: 12px 28px; }
+.detail-grid h3 { margin: 0 0 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.detail-grid p { margin: 0 0 6px; }
+.detail-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.danger { color: var(--out); border-color: var(--out); }
+.empty-state { padding: 40px 20px; text-align: center; color: var(--muted); }
+footer.foot { margin-top: 18px; color: var(--muted); font-size: 12.5px; display: flex; gap: 8px 24px; flex-wrap: wrap; justify-content: space-between; }
+footer.foot p { margin: 0; max-width: 90ch; }
+
+dialog {
+  border: 1px solid var(--rule); border-radius: 12px; padding: 0; background: var(--panel); color: var(--ink);
+  width: min(880px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+}
+dialog::backdrop { background: rgba(15, 20, 25, .45); }
+.dlg-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 18px 20px 10px; }
+.dlg-head h2 { margin: 0; font-size: 20px; }
+.dlg-body { padding: 4px 20px 12px; overflow: auto; max-height: calc(100vh - 200px); }
+.dlg-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 20px 18px; border-top: 1px solid var(--rule-soft); flex-wrap: wrap; }
+table.simple { width: 100%; border-collapse: collapse; }
+.simple th, .simple td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule-soft); }
+.simple th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+.simple td.num, .simple th.num { text-align: center; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.form-grid label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.form-grid label.wide { grid-column: 1 / -1; }
+.form-grid input, .form-grid select { font: inherit; color: var(--ink); padding: 8px 10px; border: 1px solid var(--rule); border-radius: 7px; background: var(--panel); }
+.form-error { color: var(--out); margin: 8px 0 0; }
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--panel);
+  padding: 9px 16px; border-radius: 8px; font-weight: 600; z-index: 50; box-shadow: 0 6px 18px rgba(0,0,0,.2);
+}
+#print-area { display: none; }
+
+@media (max-width: 720px) {
+  h1 { font-size: 25px; }
+  .wrap { padding: 16px 12px 40px; }
+  .form-grid { grid-template-columns: 1fr; }
+  tr.detail td { padding-left: 16px; }
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+@media print {
+  @page { size: letter; margin: 0.45in; }
+  body { background: #fff; color: #000; font-size: 10.5px; }
+  body > *:not(#print-area) { display: none !important; }
+  #print-area { display: block; }
+  #print-area h1 { font-size: 17px; margin: 0 0 2px; }
+  #print-area .psub { margin: 0 0 10px; color: #444; }
+  #print-area table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+  #print-area tr { page-break-inside: avoid; }
+  #print-area th { text-align: left; font-size: 9.5px; color: #333; border-bottom: 1.2px solid #333; padding: 4px; }
+  #print-area td { border-bottom: 0.6px solid #bbb; padding: 3px 4px; vertical-align: middle; }
+  #print-area td.nw { white-space: nowrap; }
+  #print-area .hx { color: #555; font-size: 9px; }
+  #print-area tr.pg { page-break-after: avoid; break-after: avoid; }
+  #print-area tr.pg td { background: #e9ecef; font-weight: 700; padding: 4px 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-area .ptile svg { width: 64px; height: 37px; display: block; }
+  #print-area .box { display: inline-block; width: 44px; height: 18px; border: 1px solid #555; }
+  #print-area .sq { display: inline-block; width: 12px; height: 12px; border: 1px solid #555; }
+  #print-area .num { text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Fittings stockroom</h1>
+      <p class="sub" id="subtitle"></p>
+    </div>
+    <div class="actions">
+      <button type="button" id="btn-reorder">Reorder list<span class="count-badge zero" id="reorder-count">0</span></button>
+      <button type="button" id="btn-add">Add part</button>
+      <details class="menu" id="backup-menu">
+        <summary class="btn">Backup and print</summary>
+        <div class="menu-list" role="menu">
+          <button type="button" data-cmd="backup-save">Save backup file</button>
+          <button type="button" data-cmd="backup-restore">Restore from backup file…</button>
+          <hr>
+          <button type="button" data-cmd="csv-export">Export spreadsheet (CSV)</button>
+          <button type="button" data-cmd="csv-import">Import quantities from CSV…</button>
+          <p class="hint">Fills Location, Min Qty, Qty On Hand, Order Qty and Notes by part number.</p>
+          <hr>
+          <button type="button" data-cmd="print-count">Print count sheet for this view</button>
+          <button type="button" data-cmd="print-reorder">Print reorder list</button>
+        </div>
+      </details>
+      <input type="file" id="file-backup" accept=".json,application/json" hidden>
+      <input type="file" id="file-csv" accept=".csv,text/csv" hidden>
+    </div>
+  </header>
+
+  <div class="banner warn" id="storage-warn" hidden>
+    <p><strong>This browser isn't keeping your changes.</strong> Save a backup file before you close this page, or open the file in a different browser.</p>
+    <button type="button" data-cmd="backup-save">Save backup file</button>
+  </div>
+  <div class="banner" id="backup-nudge" hidden>
+    <p id="backup-nudge-text"></p>
+    <button type="button" data-cmd="backup-save">Save backup file</button>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <input type="search" id="q" placeholder="Search part number, description, bin, note" aria-label="Search parts" autocomplete="off">
+    </div>
+    <div class="seg" id="size-seg" role="group" aria-label="Tube size"></div>
+    <select id="cat" aria-label="Category"></select>
+  </div>
+  <div class="controls">
+    <div class="seg" id="show-seg" role="group" aria-label="Show"></div>
+    <label class="check"><input type="checkbox" id="show-hidden"> Show hidden parts</label>
+  </div>
+
+  <div class="table-wrap">
+    <table class="parts" id="parts">
+      <thead>
+        <tr>
+          <th aria-label="Size color"></th>
+          <th>Drawing</th>
+          <th>Part</th>
+          <th>Size</th>
+          <th>Other end</th>
+          <th>Hex (in)</th>
+          <th>Location</th>
+          <th class="num">Min</th>
+          <th class="num">On hand</th>
+          <th class="num">Order qty</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty-state" id="empty" hidden></div>
+  </div>
+
+  <footer class="foot">
+    <p id="save-status"></p>
+    <p id="build-info"></p>
+  </footer>
+</div>
+
+<dialog id="dlg-reorder" aria-labelledby="reorder-title">
+  <div class="dlg-head">
+    <h2 id="reorder-title">Reorder list</h2>
+    <span class="meta" id="reorder-meta"></span>
+  </div>
+  <div class="dlg-body" id="reorder-body"></div>
+  <div class="dlg-foot">
+    <button type="button" data-cmd="reorder-copy">Copy list</button>
+    <button type="button" data-cmd="reorder-csv">Export CSV</button>
+    <button type="button" data-cmd="print-reorder">Print</button>
+    <button type="button" class="primary" data-close>Done</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-add" aria-labelledby="add-title">
+  <form id="add-form" method="dialog">
+    <div class="dlg-head"><h2 id="add-title">Add a part</h2></div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <label>Part number<input name="pn" required autocomplete="off" placeholder="SS-400-6"></label>
+        <label>Category<input name="cat" list="cat-list" required placeholder="Union"></label>
+        <label class="wide">Description<input name="desc" required placeholder="Straight Union"></label>
+        <label>Tube OD<input name="od" list="od-list" placeholder="1/4 in"></label>
+        <label>Other end<input name="end" placeholder="1/4 in tube"></label>
+        <label>Material<input name="mat" value="316 SS"></label>
+        <label>Drawing<select name="kind" id="kind-select"></select></label>
+        <label>Nut hex (in)<input name="nutHex" placeholder="9/16"></label>
+        <label>Body hex (in)<input name="bodyHex" placeholder="1/2"></label>
+      </div>
+      <datalist id="cat-list"></datalist>
+      <datalist id="od-list"><option value="1/16 in"><option value="1/8 in"><option value="1/4 in"></datalist>
+      <p class="form-error" id="add-error" hidden></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Add part</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-confirm" aria-labelledby="confirm-title">
+  <div class="dlg-head"><h2 id="confirm-title"></h2></div>
+  <div class="dlg-body"><p id="confirm-text"></p></div>
+  <div class="dlg-foot">
+    <button type="button" data-close>Cancel</button>
+    <button type="button" class="primary" id="confirm-ok"></button>
+  </div>
+</dialog>
+
+<div id="print-area"></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+"use strict";
+const CATALOG = [{"pn":"SS-100-6","cat":"Union","desc":"Straight Union","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-200-6","cat":"Union","desc":"Straight Union","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-400-6","cat":"Union","desc":"Straight Union","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-100-6BT","cat":"Union","desc":"Straight Union","bt":true,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-200-6BT","cat":"Union","desc":"Straight Union","bt":true,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-400-6BT","cat":"Union","desc":"Straight Union","bt":true,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for fractional unions","hexSource":"MS-01-140 Rev AJ pp. 14, 57","kind":"union"},{"pn":"SS-200-6-1","cat":"Reducing Union","desc":"Reducing Union","bt":false,"od":"1/8 in","end":"1/16 in tube","mat":"316 SS","nutHex":"7/16 / 5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-400-6-1","cat":"Reducing Union","desc":"Reducing Union","bt":false,"od":"1/4 in","end":"1/16 in tube","mat":"316 SS","nutHex":"9/16 / 5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-400-6-2","cat":"Reducing Union","desc":"Reducing Union","bt":false,"od":"1/4 in","end":"1/8 in tube","mat":"316 SS","nutHex":"9/16 / 7/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-200-6-1BT","cat":"Reducing Union","desc":"Reducing Union","bt":true,"od":"1/8 in","end":"1/16 in tube","mat":"316 SS","nutHex":"7/16 / 5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-400-6-1BT","cat":"Reducing Union","desc":"Reducing Union","bt":true,"od":"1/4 in","end":"1/16 in tube","mat":"316 SS","nutHex":"9/16 / 5/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-400-6-2BT","cat":"Reducing Union","desc":"Reducing Union","bt":true,"od":"1/4 in","end":"1/8 in tube","mat":"316 SS","nutHex":"9/16 / 7/16","bodyHex":"Not listed","hexNote":"Catalog gives no body hex for reducing unions","hexSource":"MS-01-140 Rev AJ pp. 15, 57","kind":"reducing_union"},{"pn":"SS-100-9","cat":"Union Elbow","desc":"Union Elbow","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 33, 57","kind":"union_elbow"},{"pn":"SS-200-9","cat":"Union Elbow","desc":"Union Elbow","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 33, 57","kind":"union_elbow"},{"pn":"SS-400-9","cat":"Union Elbow","desc":"Union Elbow","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 33, 57","kind":"union_elbow"},{"pn":"SS-400-2R-4","cat":"Reducing Elbow","desc":"Reducing Elbow (Fitting x Tube Stub)","bt":false,"od":"1/4 in","end":"1/4 in tube stub","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 36, 57","kind":"reducing_elbow"},{"pn":"SS-100-3","cat":"Union Tee","desc":"Union Tee","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-200-3","cat":"Union Tee","desc":"Union Tee","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-400-3","cat":"Union Tee","desc":"Union Tee","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-100-3BT","cat":"Union Tee","desc":"Union Tee","bt":true,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-200-3BT","cat":"Union Tee","desc":"Union Tee","bt":true,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-400-3BT","cat":"Union Tee","desc":"Union Tee","bt":true,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 40, 57","kind":"union_tee"},{"pn":"SS-100-4","cat":"Union Cross","desc":"Union Cross","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"Not listed","hexNote":"No 1/16 in. union cross in catalog; confirm part exists","hexSource":"MS-01-140 Rev AJ pp. 46, 57","kind":"union_cross"},{"pn":"SS-200-4","cat":"Union Cross","desc":"Union Cross","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"3/8","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 46, 57","kind":"union_cross"},{"pn":"SS-400-4","cat":"Union Cross","desc":"Union Cross","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"Body flats","hexSource":"MS-01-140 Rev AJ pp. 46, 57","kind":"union_cross"},{"pn":"SS-100-61","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"Lock nut is also 5/16","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-200-61","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"1/2","hexNote":"Lock nut is also 1/2","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-400-61","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"5/8","hexNote":"Lock nut is also 5/8","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-100-61BT","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":true,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"Lock nut is also 5/16","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-200-61BT","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":true,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"7/16","bodyHex":"1/2","hexNote":"Lock nut is also 1/2","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-400-61BT","cat":"Bulkhead Union","desc":"Bulkhead Union","bt":true,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"9/16","bodyHex":"5/8","hexNote":"Lock nut is also 5/8","hexSource":"MS-01-140 Rev AJ pp. 16, 57","kind":"bulkhead_union"},{"pn":"SS-100-1-1","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/16 in","end":"1/16 in MNPT","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-100-1-2","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/16 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"5/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-200-1-2","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/8 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-200-1-4","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/8 in","end":"1/4 in MNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-400-1-2","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/4 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-400-1-4","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":false,"od":"1/4 in","end":"1/4 in MNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-100-1-1BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/16 in","end":"1/16 in MNPT","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-100-1-2BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/16 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"5/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-200-1-2BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/8 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-200-1-4BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/8 in","end":"1/4 in MNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-400-1-2BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/4 in","end":"1/8 in MNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-400-1-4BT","cat":"Male Connector","desc":"Male Connector (Tube x MNPT)","bt":true,"od":"1/4 in","end":"1/4 in MNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 17, 57","kind":"male_connector"},{"pn":"SS-100-7-2","cat":"Female Connector","desc":"Female Connector (Tube x FNPT)","bt":false,"od":"1/16 in","end":"1/8 in FNPT","mat":"316 SS","nutHex":"5/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 26, 57","kind":"female_connector"},{"pn":"SS-200-7-2","cat":"Female Connector","desc":"Female Connector (Tube x FNPT)","bt":false,"od":"1/8 in","end":"1/8 in FNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 26, 57","kind":"female_connector"},{"pn":"SS-200-7-4","cat":"Female Connector","desc":"Female Connector (Tube x FNPT)","bt":false,"od":"1/8 in","end":"1/4 in FNPT","mat":"316 SS","nutHex":"7/16","bodyHex":"3/4","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 26, 57","kind":"female_connector"},{"pn":"SS-400-7-2","cat":"Female Connector","desc":"Female Connector (Tube x FNPT)","bt":false,"od":"1/4 in","end":"1/8 in FNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"9/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 26, 57","kind":"female_connector"},{"pn":"SS-400-7-4","cat":"Female Connector","desc":"Female Connector (Tube x FNPT)","bt":false,"od":"1/4 in","end":"1/4 in FNPT","mat":"316 SS","nutHex":"9/16","bodyHex":"3/4","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 26, 57","kind":"female_connector"},{"pn":"SS-100-R-2","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":false,"od":"1/16 in","end":"1/8 in tube stub","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-100-R-4","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":false,"od":"1/16 in","end":"1/4 in tube stub","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-200-R-4","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":false,"od":"1/8 in","end":"1/4 in tube stub","mat":"316 SS","nutHex":"7/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-400-R-2","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":false,"od":"1/4 in","end":"1/8 in tube stub","mat":"316 SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-100-R-2BT","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":true,"od":"1/16 in","end":"1/8 in tube stub","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-100-R-4BT","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":true,"od":"1/16 in","end":"1/4 in tube stub","mat":"316 SS","nutHex":"5/16","bodyHex":"5/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-200-R-4BT","cat":"Reducer","desc":"Reducer (Fitting x Tube Stub)","bt":true,"od":"1/8 in","end":"1/4 in tube stub","mat":"316 SS","nutHex":"7/16","bodyHex":"7/16","hexNote":"","hexSource":"MS-01-140 Rev AJ pp. 29, 57","kind":"reducer"},{"pn":"SS-101-PC","cat":"Port Connector","desc":"Port Connector","bt":false,"od":"1/16 in","end":"1/16 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"port_connector"},{"pn":"SS-201-PC","cat":"Port Connector","desc":"Port Connector","bt":false,"od":"1/8 in","end":"1/8 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"port_connector"},{"pn":"SS-401-PC","cat":"Port Connector","desc":"Port Connector","bt":false,"od":"1/4 in","end":"1/4 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"port_connector"},{"pn":"SS-201-PC-1","cat":"Port Connector","desc":"Reducing Port Connector","bt":false,"od":"1/8 in","end":"1/16 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"reducing_port_connector"},{"pn":"SS-401-PC-1","cat":"Port Connector","desc":"Reducing Port Connector","bt":false,"od":"1/4 in","end":"1/16 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"reducing_port_connector"},{"pn":"SS-401-PC-2","cat":"Port Connector","desc":"Reducing Port Connector","bt":false,"od":"1/4 in","end":"1/8 in tube","mat":"316 SS","nutHex":"None","bodyHex":"None","hexNote":"No hex; 1 in. and under supplied without nuts","hexSource":"MS-01-140 Rev AJ p. 31","kind":"reducing_port_connector"},{"pn":"SS-4-VCR-6-200","cat":"VCR Connector","desc":"VCR Male Connector (Male VCR x Tube)","bt":false,"od":"1/8 in","end":"1/4 in male VCR","mat":"316L SS","nutHex":"7/16","bodyHex":"5/8","hexNote":"Body hex is at the male VCR end","hexSource":"MS-01-24 Rev X p. 9","kind":"vcr_male_connector"},{"pn":"SS-4-VCR-6-400","cat":"VCR Connector","desc":"VCR Male Connector (Male VCR x Tube)","bt":false,"od":"1/4 in","end":"1/4 in male VCR","mat":"316L SS","nutHex":"9/16","bodyHex":"5/8","hexNote":"Body hex is at the male VCR end","hexSource":"MS-01-24 Rev X p. 9","kind":"vcr_male_connector"},{"pn":"SS-4-WVCR-6-400","cat":"VCR Connector","desc":"VCR Female Connector (Female VCR x Tube)","bt":false,"od":"1/4 in","end":"1/4 in female VCR","mat":"316L SS","nutHex":"9/16","bodyHex":"1/2","hexNote":"VCR female nut is 3/4; welded assembly","hexSource":"MS-01-24 Rev X p. 13","kind":"vcr_female_connector"},{"pn":"SS-4-VCR-A1-400","cat":"VCR Connector","desc":"VCR Bulkhead Connector (Male VCR x Tube)","bt":false,"od":"1/4 in","end":"1/4 in male VCR","mat":"316L SS","nutHex":"9/16","bodyHex":"5/8","hexNote":"Bulkhead nut is also 5/8","hexSource":"MS-01-24 Rev X p. 9","kind":"vcr_bulkhead_connector"},{"pn":"SS-100-C","cat":"Cap","desc":"Cap","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"cap"},{"pn":"SS-200-C","cat":"Cap","desc":"Cap","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"cap"},{"pn":"SS-400-C","cat":"Cap","desc":"Cap","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"cap"},{"pn":"SS-100-P","cat":"Plug","desc":"Plug","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"plug"},{"pn":"SS-200-P","cat":"Plug","desc":"Plug","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"plug"},{"pn":"SS-400-P","cat":"Plug","desc":"Plug","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"Not listed","bodyHex":"Not listed","hexNote":"Catalog gives no hex for caps and plugs","hexSource":"MS-01-140 Rev AJ p. 32","kind":"plug"},{"pn":"SS-102-1","cat":"Nut","desc":"Nut","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"5/16","bodyHex":"—","hexNote":"","hexSource":"MS-01-140 Rev AJ p. 57","kind":"nut"},{"pn":"SS-202-1","cat":"Nut","desc":"Nut","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"7/16","bodyHex":"—","hexNote":"","hexSource":"MS-01-140 Rev AJ p. 57","kind":"nut"},{"pn":"SS-402-1","cat":"Nut","desc":"Nut","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"9/16","bodyHex":"—","hexNote":"","hexSource":"MS-01-140 Rev AJ p. 57","kind":"nut"},{"pn":"SS-103-1","cat":"Ferrule","desc":"Front Ferrule","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"front_ferrule"},{"pn":"SS-203-1","cat":"Ferrule","desc":"Front Ferrule","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"front_ferrule"},{"pn":"SS-403-1","cat":"Ferrule","desc":"Front Ferrule","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"front_ferrule"},{"pn":"SS-104-1","cat":"Ferrule","desc":"Back Ferrule","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"back_ferrule"},{"pn":"SS-204-1","cat":"Ferrule","desc":"Back Ferrule","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"back_ferrule"},{"pn":"SS-404-1","cat":"Ferrule","desc":"Back Ferrule","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"back_ferrule"},{"pn":"SS-100-SET","cat":"Ferrule","desc":"Ferrule Set (Front + Back)","bt":false,"od":"1/16 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"ferrule_set"},{"pn":"SS-200-SET","cat":"Ferrule","desc":"Ferrule Set (Front + Back)","bt":false,"od":"1/8 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"ferrule_set"},{"pn":"SS-400-SET","cat":"Ferrule","desc":"Ferrule Set (Front + Back)","bt":false,"od":"1/4 in","end":"—","mat":"316 SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"","kind":"ferrule_set"},{"pn":"SS-2-VCR-2","cat":"VCR Gasket","desc":"VCR Gasket - Silver Plated","bt":false,"od":"1/8 in","end":"1/8 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_gasket"},{"pn":"SS-2-VCR-2-VS","cat":"VCR Gasket","desc":"VCR Gasket - Unplated","bt":false,"od":"1/8 in","end":"1/8 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_gasket"},{"pn":"SS-4-VCR-2","cat":"VCR Gasket","desc":"VCR Gasket - Silver Plated","bt":false,"od":"1/4 in","end":"1/4 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_gasket"},{"pn":"SS-4-VCR-2-VS","cat":"VCR Gasket","desc":"VCR Gasket - Unplated","bt":false,"od":"1/4 in","end":"1/4 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_gasket"},{"pn":"SS-4-VCR-2-GR","cat":"VCR Gasket","desc":"VCR Retainer Gasket - Silver Plated","bt":false,"od":"1/4 in","end":"1/4 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_retainer_gasket"},{"pn":"SS-4-VCR-2-GR-VS","cat":"VCR Gasket","desc":"VCR Retainer Gasket - Unplated","bt":false,"od":"1/4 in","end":"1/4 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_retainer_gasket"},{"pn":"SS-4-VCR-2-ZC-VS","cat":"VCR Gasket","desc":"VCR Side-Load Retainer Gasket - Unplated","bt":false,"od":"1/4 in","end":"1/4 in VCR","mat":"316L SS","nutHex":"—","bodyHex":"—","hexNote":"No hex","hexSource":"MS-01-24 Rev X p. 17","kind":"vcr_side_load_gasket"}];
+const DRAWINGS = {"union":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(1.067 1.067)\"><path d=\"M-9 -11 L9 -11 L9 11 L-9 11 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"5.5\" x2=\"9\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"-5.5\" x2=\"9\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><g transform=\"rotate(0)\"><path d=\"M9 -8 L17 -8 L17 8 L9 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-8\" x2=\"11.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-8\" x2=\"13.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-8\" x2=\"15.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><path d=\"M17 -12 L28 -12 L30 -10 L30 10 L28 12 L17 12 L15 10 L15 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6\" x2=\"30\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6\" x2=\"30\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(180)\"><path d=\"M9 -8 L17 -8 L17 8 L9 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-8\" x2=\"11.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-8\" x2=\"13.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-8\" x2=\"15.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><path d=\"M17 -12 L28 -12 L30 -10 L30 10 L28 12 L17 12 L15 10 L15 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6\" x2=\"30\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6\" x2=\"30\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/g><\/svg>","reducing_union":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(1.067 1.067)\"><path d=\"M-9 -12 L9 -12 L9 12 L-9 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"6\" x2=\"9\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"-6\" x2=\"9\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M9 -9.2 L17 -9.2 L17 9.2 L9 9.2 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-9.2\" x2=\"11.35\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-9.2\" x2=\"13.55\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-9.2\" x2=\"15.75\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><path d=\"M17 -13.8 L28 -13.8 L30 -11.8 L30 11.8 L28 13.8 L17 13.8 L15 11.8 L15 -11.8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6.9\" x2=\"30\" y2=\"6.9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6.9\" x2=\"30\" y2=\"-6.9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(0)\"><path d=\"M9 -6.4 L17 -6.4 L17 6.4 L9 6.4 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-6.4\" x2=\"11.35\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-6.4\" x2=\"13.55\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-6.4\" x2=\"15.75\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><path d=\"M17 -9.6 L28 -9.6 L30 -7.6 L30 7.6 L28 9.6 L17 9.6 L15 7.6 L15 -7.6 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.562\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"4.8\" x2=\"30\" y2=\"4.8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-4.8\" x2=\"30\" y2=\"-4.8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.328\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/g><\/svg>","union_elbow":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(42.512 12.488)\"><g transform=\"scale(0.791 0.791)\"><path d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(90)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/g><\/svg>","union_tee":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 12.488)\"><g transform=\"scale(0.791 0.791)\"><path d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(0)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(90)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/g><\/svg>","union_cross":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(0.548 0.548)\"><path d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><g transform=\"rotate(0)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(90)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(180)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(270)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"1.094\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.638\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/g><\/svg>","bulkhead_union":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(34.2 20)\"><g transform=\"scale(0.8 0.8)\"><path d=\"M-6 -8 L28 -8 L28 8 L-6 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"-5.05\" y1=\"-8\" x2=\"-3.65\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"-2.85\" y1=\"-8\" x2=\"-1.45\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"-0.65\" y1=\"-8\" x2=\"0.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"1.55\" y1=\"-8\" x2=\"2.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"3.75\" y1=\"-8\" x2=\"5.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"5.95\" y1=\"-8\" x2=\"7.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"8.15\" y1=\"-8\" x2=\"9.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"10.35\" y1=\"-8\" x2=\"11.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"12.55\" y1=\"-8\" x2=\"13.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"14.75\" y1=\"-8\" x2=\"16.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"16.95\" y1=\"-8\" x2=\"18.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"19.15\" y1=\"-8\" x2=\"20.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"21.35\" y1=\"-8\" x2=\"22.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"23.55\" y1=\"-8\" x2=\"24.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"25.75\" y1=\"-8\" x2=\"27.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><path d=\"M-18 -12 L-6 -12 L-6 12 L-18 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"6\" x2=\"-6\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"-6\" x2=\"-6\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M18 -8 L26 -8 L26 8 L18 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"18.95\" y1=\"-8\" x2=\"20.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"21.15\" y1=\"-8\" x2=\"22.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"23.35\" y1=\"-8\" x2=\"24.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><path d=\"M26 -12 L37 -12 L39 -10 L39 10 L37 12 L26 12 L24 10 L24 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"6\" x2=\"39\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"-6\" x2=\"39\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><\/g><path d=\"M28 -12 L39 -12 L41 -10 L41 10 L39 12 L28 12 L26 10 L26 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"26\" y1=\"6\" x2=\"41\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"26\" y1=\"-6\" x2=\"41\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><path d=\"M-4 -20 L0 -20 L0 20 L-4 20 Z\" fill=\"#8f99a2\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><path d=\"M1.75 -13.5 L5.25 -13.5 L7 -11.75 L7 11.75 L5.25 13.5 L1.75 13.5 L0 11.75 L0 -11.75 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.75\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"6.75\" x2=\"7\" y2=\"6.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"-6.75\" x2=\"7\" y2=\"-6.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.437\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","male_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35.55 20)\"><g transform=\"scale(1.1 1.1)\"><g transform=\"rotate(180)\"><path d=\"M8 -8 L16 -8 L16 8 L8 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-8\" x2=\"10.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-8\" x2=\"12.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-8\" x2=\"14.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M16 -12 L27 -12 L29 -10 L29 10 L27 12 L16 12 L14 10 L14 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"6\" x2=\"29\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"-6\" x2=\"29\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><path d=\"M8 -7.5 L28 -6 L28 6 L8 7.5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-7.376\" x2=\"10.35\" y2=\"7.376\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-7.211\" x2=\"12.55\" y2=\"7.211\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-7.046\" x2=\"14.75\" y2=\"7.046\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"15.55\" y1=\"-6.881\" x2=\"16.95\" y2=\"6.881\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"17.75\" y1=\"-6.716\" x2=\"19.15\" y2=\"6.716\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"19.95\" y1=\"-6.551\" x2=\"21.35\" y2=\"6.551\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"22.15\" y1=\"-6.386\" x2=\"23.55\" y2=\"6.386\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"24.35\" y1=\"-6.221\" x2=\"25.75\" y2=\"6.221\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M-8 -11 L8 -11 L8 11 L-8 11 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"5.5\" x2=\"8\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"-5.5\" x2=\"8\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","female_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35.55 20)\"><g transform=\"scale(1.1 1.1)\"><g transform=\"rotate(180)\"><path d=\"M4 -8 L12 -8 L12 8 L4 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"4.95\" y1=\"-8\" x2=\"6.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"7.15\" y1=\"-8\" x2=\"8.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"9.35\" y1=\"-8\" x2=\"10.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M12 -12 L23 -12 L25 -10 L25 10 L23 12 L12 12 L10 10 L10 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"10\" y1=\"6\" x2=\"25\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"10\" y1=\"-6\" x2=\"25\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><path d=\"M-4 -13 L24 -13 L24 13 L-4 13 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-4\" y1=\"6.5\" x2=\"24\" y2=\"6.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-4\" y1=\"-6.5\" x2=\"24\" y2=\"-6.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M11 -8 L24 -8 L24 8 L11 8 Z\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"11\" y1=\"5.5\" x2=\"24\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"11\" y1=\"-5.5\" x2=\"24\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","reducer":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(33.35 20)\"><g transform=\"scale(1.1 1.1)\"><g transform=\"rotate(180)\"><path d=\"M6 -7.2 L14 -7.2 L14 7.2 L6 7.2 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"6.95\" y1=\"-7.2\" x2=\"8.35\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"9.15\" y1=\"-7.2\" x2=\"10.55\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"11.35\" y1=\"-7.2\" x2=\"12.75\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M14 -10.8 L25 -10.8 L27 -8.8 L27 8.8 L25 10.8 L14 10.8 L12 8.8 L12 -8.8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"12\" y1=\"5.4\" x2=\"27\" y2=\"5.4\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"12\" y1=\"-5.4\" x2=\"27\" y2=\"-5.4\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><path d=\"M6 -5.5 L30 -5.5 L30 5.5 L6 5.5 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M-6 -10 L6 -10 L6 10 L-6 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-6\" y1=\"5\" x2=\"6\" y2=\"5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-6\" y1=\"-5\" x2=\"6\" y2=\"-5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","port_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(26.2 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-4 -5 L30 -5 L30 5 L-4 5 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M-14 -5.12 L-4 -8 L-4 8 L-14 5.12 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-14\" y1=\"2.5\" x2=\"30\" y2=\"2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"-14\" y1=\"-2.5\" x2=\"30\" y2=\"-2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","reducing_port_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(26.2 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-4 -3.5 L30 -3.5 L30 3.5 L-4 3.5 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M-14 -5.76 L-4 -9 L-4 9 L-14 5.76 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-14\" y1=\"1.75\" x2=\"30\" y2=\"1.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"-14\" y1=\"-1.75\" x2=\"30\" y2=\"-1.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","cap":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(34.725 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-8 -12 L4 -12 L6 -10 L6 10 L4 12 L-8 12 L-10 10 L-10 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-10\" y1=\"6\" x2=\"6\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-10\" y1=\"-6\" x2=\"6\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M6 -9 C12 -9 12 9 6 9 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","plug":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(30.6 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M0 -5 L14 -5 L14 5 L0 5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M14 -5 L20 -3 L20 3 L14 5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M-12 -11 L0 -11 L0 11 L-12 11 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-12\" y1=\"5.5\" x2=\"0\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-12\" y1=\"-5.5\" x2=\"0\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","nut":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(16.458 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-6 -12 L6 -12 L8 -10 L8 10 L6 12 L-6 12 L-8 10 L-8 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"6\" x2=\"8\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"-6\" x2=\"8\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M41.713 0 L34.785 12 L20.928 12 L14 0 L20.928 -12 L34.785 -12 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"27.856\" cy=\"0\" r=\"11.362\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><circle cx=\"27.856\" cy=\"0\" r=\"5\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","bulkhead_lock_nut":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(13.918 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-2 -14 L2 -14 L4 -12 L4 12 L2 14 L-2 14 L-4 12 L-4 -12 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-4\" y1=\"7\" x2=\"4\" y2=\"7\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-4\" y1=\"-7\" x2=\"4\" y2=\"-7\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M42.332 0 L34.249 14 L18.083 14 L10 0 L18.083 -14 L34.249 -14 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"26.166\" cy=\"0\" r=\"13.256\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><circle cx=\"26.166\" cy=\"0\" r=\"9.5\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","front_ferrule":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(36.1 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-12 -4 L4 -9 L10 -9 L10 9 L4 9 L-12 4 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"4\" y1=\"-9\" x2=\"4\" y2=\"9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-12\" y1=\"2.5\" x2=\"10\" y2=\"2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"-12\" y1=\"-2.5\" x2=\"10\" y2=\"-2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","back_ferrule":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(34.45 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-5 -5 L-1 -8 L6 -8 L6 8 L-1 8 L-5 5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-1\" y1=\"-8\" x2=\"-1\" y2=\"8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-5\" y1=\"3\" x2=\"6\" y2=\"3\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"-5\" y1=\"-3\" x2=\"6\" y2=\"-3\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","ferrule_set":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(37.2 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-22 -4 L-6 -9 L0 -9 L0 9 L-6 9 L-22 4 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-6\" y1=\"-9\" x2=\"-6\" y2=\"9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-22\" y1=\"2.5\" x2=\"0\" y2=\"2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"-22\" y1=\"-2.5\" x2=\"0\" y2=\"-2.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><path d=\"M7 -5 L11 -8 L18 -8 L18 8 L11 8 L7 5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"11\" y1=\"-8\" x2=\"11\" y2=\"8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"7\" y1=\"3\" x2=\"18\" y2=\"3\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><line x1=\"7\" y1=\"-3\" x2=\"18\" y2=\"-3\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\" stroke-dasharray=\"1.273 0.909\"/><\/g><\/g><\/g><\/svg>","reducing_elbow":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(42.022 11.87)\"><g transform=\"scale(0.739 0.739)\"><path d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.812\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.812\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.474\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.474\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.474\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.812\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.474\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.474\" stroke-linejoin=\"round\"/><\/g><path d=\"M-5 10 L5 10 L5 34 L-5 34 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.812\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_male_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(37.64 20)\"><g transform=\"scale(1.1 1.1)\"><g transform=\"rotate(180)\"><path d=\"M8 -8 L16 -8 L16 8 L8 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-8\" x2=\"10.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-8\" x2=\"12.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-8\" x2=\"14.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M16 -12 L27 -12 L29 -10 L29 10 L27 12 L16 12 L14 10 L14 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"6\" x2=\"29\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"-6\" x2=\"29\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><path d=\"M8 -7.5 L22 -7.5 L22 7.5 L8 7.5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-7.5\" x2=\"10.35\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-7.5\" x2=\"12.55\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-7.5\" x2=\"14.75\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"15.55\" y1=\"-7.5\" x2=\"16.95\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"17.75\" y1=\"-7.5\" x2=\"19.15\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"19.95\" y1=\"-7.5\" x2=\"21.35\" y2=\"7.5\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><path d=\"M22 -4.8 L24.2 -4.8 L24.2 4.8 L22 4.8 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><path d=\"M-8 -12 L8 -12 L8 12 L-8 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"6\" x2=\"8\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"-6\" x2=\"8\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.318\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_female_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(33.426 20)\"><g transform=\"scale(1.049 1.049)\"><g transform=\"rotate(180)\"><path d=\"M8 -8 L16 -8 L16 8 L8 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-8\" x2=\"10.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-8\" x2=\"12.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-8\" x2=\"14.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><path d=\"M16 -12 L27 -12 L29 -10 L29 10 L27 12 L16 12 L14 10 L14 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"6\" x2=\"29\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"-6\" x2=\"29\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><\/g><path d=\"M7 -4.5 L16 -4.5 L16 4.5 L7 4.5 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><path d=\"M6 -5.5 L8.5 -5.5 L8.5 5.5 L6 5.5 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><path d=\"M-8 -10 L6 -10 L6 10 L-8 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"5\" x2=\"6\" y2=\"5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"-5\" x2=\"6\" y2=\"-5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><path d=\"M16 -15 L30 -15 L32 -13 L32 13 L30 15 L16 15 L14 13 L14 -13 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"7.5\" x2=\"32\" y2=\"7.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"-7.5\" x2=\"32\" y2=\"-7.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.334\" stroke-linejoin=\"round\"/><circle cx=\"23\" cy=\"10\" r=\"1.4\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.572\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_bulkhead_connector":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(41.29 20)\"><g transform=\"scale(0.85 0.85)\"><path d=\"M-6 -8 L22 -8 L22 8 L-6 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><line x1=\"-5.05\" y1=\"-8\" x2=\"-3.65\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"-2.85\" y1=\"-8\" x2=\"-1.45\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"-0.65\" y1=\"-8\" x2=\"0.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"1.55\" y1=\"-8\" x2=\"2.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"3.75\" y1=\"-8\" x2=\"5.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"5.95\" y1=\"-8\" x2=\"7.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"8.15\" y1=\"-8\" x2=\"9.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"10.35\" y1=\"-8\" x2=\"11.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"12.55\" y1=\"-8\" x2=\"13.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"14.75\" y1=\"-8\" x2=\"16.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"16.95\" y1=\"-8\" x2=\"18.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"19.15\" y1=\"-8\" x2=\"20.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><path d=\"M22 -5 L24.2 -5 L24.2 5 L22 5 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><path d=\"M-18 -12 L-6 -12 L-6 12 L-18 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"6\" x2=\"-6\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"-6\" x2=\"-6\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M18 -8 L26 -8 L26 8 L18 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><line x1=\"18.95\" y1=\"-8\" x2=\"20.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"21.15\" y1=\"-8\" x2=\"22.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"23.35\" y1=\"-8\" x2=\"24.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><path d=\"M26 -12 L37 -12 L39 -10 L39 10 L37 12 L26 12 L24 10 L24 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"6\" x2=\"39\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"-6\" x2=\"39\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><\/g><path d=\"M-4 -20 L0 -20 L0 20 L-4 20 Z\" fill=\"#8f99a2\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><path d=\"M1.75 -13 L5.25 -13 L7 -11.25 L7 11.25 L5.25 13 L1.75 13 L0 11.25 L0 -11.25 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.706\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"6.5\" x2=\"7\" y2=\"6.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"-6.5\" x2=\"7\" y2=\"-6.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.412\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_gasket":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(32.25 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M-14 -11 L-11.5 -11 L-11.5 11 L-14 11 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"8\" cy=\"0\" r=\"11\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"8\" cy=\"0\" r=\"5\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_retainer_gasket":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(1.1 1.1)\"><circle cx=\"0\" cy=\"0\" r=\"14\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"12\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><g transform=\"rotate(90)\"><path d=\"M9.5 -1.4 L12.5 -1.4 L12.5 1.4 L9.5 1.4 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(210)\"><path d=\"M9.5 -1.4 L12.5 -1.4 L12.5 1.4 L9.5 1.4 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(330)\"><path d=\"M9.5 -1.4 L12.5 -1.4 L12.5 1.4 L9.5 1.4 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><circle cx=\"0\" cy=\"0\" r=\"10\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"4.5\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","vcr_side_load_gasket":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(29.225 20)\"><g transform=\"scale(1.1 1.1)\"><path d=\"M9 -3 L22 -3 L22 3 L9 3 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"11.5\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"9.5\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"9\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><circle cx=\"0\" cy=\"0\" r=\"4\" fill=\"#ffffff\" stroke=\"#2b2f33\" stroke-width=\"0.545\" stroke-linejoin=\"round\"/><\/g><\/g><\/g><\/svg>","bulkhead_union|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(34.273 20)\"><g transform=\"scale(0.727 0.727)\"><path d=\"M-6 -8 L28 -8 L28 8 L-6 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"-5.05\" y1=\"-8\" x2=\"-3.65\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"-2.85\" y1=\"-8\" x2=\"-1.45\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"-0.65\" y1=\"-8\" x2=\"0.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"1.55\" y1=\"-8\" x2=\"2.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"3.75\" y1=\"-8\" x2=\"5.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"5.95\" y1=\"-8\" x2=\"7.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"8.15\" y1=\"-8\" x2=\"9.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"10.35\" y1=\"-8\" x2=\"11.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"12.55\" y1=\"-8\" x2=\"13.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"14.75\" y1=\"-8\" x2=\"16.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"16.95\" y1=\"-8\" x2=\"18.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"19.15\" y1=\"-8\" x2=\"20.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"21.35\" y1=\"-8\" x2=\"22.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"23.55\" y1=\"-8\" x2=\"24.95\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"25.75\" y1=\"-8\" x2=\"27.15\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><path d=\"M-18 -12 L-6 -12 L-6 12 L-18 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"6\" x2=\"-6\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"-18\" y1=\"-6\" x2=\"-6\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M18 -8 L26 -8 L26 8 L18 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"18.95\" y1=\"-8\" x2=\"20.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"21.15\" y1=\"-8\" x2=\"22.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"23.35\" y1=\"-8\" x2=\"24.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><path d=\"M26 -12 L37 -12 L39 -10 L39 10 L37 12 L26 12 L24 10 L24 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"6\" x2=\"39\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"24\" y1=\"-6\" x2=\"39\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><\/g><path d=\"M28 -12 L39 -12 L41 -10 L41 10 L39 12 L28 12 L26 10 L26 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"26\" y1=\"6\" x2=\"41\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"26\" y1=\"-6\" x2=\"41\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><path d=\"M-4 -20 L0 -20 L0 20 L-4 20 Z\" fill=\"#8f99a2\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><path d=\"M1.75 -13.5 L5.25 -13.5 L7 -11.75 L7 11.75 L5.25 13.5 L1.75 13.5 L0 11.75 L0 -11.75 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.825\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"6.75\" x2=\"7\" y2=\"6.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"0\" y1=\"-6.75\" x2=\"7\" y2=\"-6.75\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.481\" stroke-linejoin=\"round\"/><line x1=\"-43\" y1=\"0\" x2=\"45\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"1.238\" stroke-linejoin=\"round\" stroke-dasharray=\"3.438 2.2\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>","male_connector|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35.492 20)\"><g transform=\"scale(0.985 0.985)\"><g transform=\"rotate(180)\"><path d=\"M8 -8 L16 -8 L16 8 L8 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-8\" x2=\"10.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-8\" x2=\"12.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-8\" x2=\"14.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><path d=\"M16 -12 L27 -12 L29 -10 L29 10 L27 12 L16 12 L14 10 L14 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"6\" x2=\"29\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"14\" y1=\"-6\" x2=\"29\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><\/g><path d=\"M8 -7.5 L28 -6 L28 6 L8 7.5 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"8.95\" y1=\"-7.376\" x2=\"10.35\" y2=\"7.376\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"11.15\" y1=\"-7.211\" x2=\"12.55\" y2=\"7.211\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"13.35\" y1=\"-7.046\" x2=\"14.75\" y2=\"7.046\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"15.55\" y1=\"-6.881\" x2=\"16.95\" y2=\"6.881\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"17.75\" y1=\"-6.716\" x2=\"19.15\" y2=\"6.716\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"19.95\" y1=\"-6.551\" x2=\"21.35\" y2=\"6.551\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"22.15\" y1=\"-6.386\" x2=\"23.55\" y2=\"6.386\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"24.35\" y1=\"-6.221\" x2=\"25.75\" y2=\"6.221\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><path d=\"M-8 -11 L8 -11 L8 11 L-8 11 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"5.5\" x2=\"8\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"-8\" y1=\"-5.5\" x2=\"8\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"-33\" y1=\"0\" x2=\"32\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"0.914\" stroke-linejoin=\"round\" stroke-dasharray=\"2.539 1.625\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>","reducer|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(33.523 20)\"><g transform=\"scale(0.985 0.985)\"><g transform=\"rotate(180)\"><path d=\"M6 -7.2 L14 -7.2 L14 7.2 L6 7.2 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"6.95\" y1=\"-7.2\" x2=\"8.35\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"9.15\" y1=\"-7.2\" x2=\"10.55\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"11.35\" y1=\"-7.2\" x2=\"12.75\" y2=\"7.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><path d=\"M14 -10.8 L25 -10.8 L27 -8.8 L27 8.8 L25 10.8 L14 10.8 L12 8.8 L12 -8.8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"12\" y1=\"5.4\" x2=\"27\" y2=\"5.4\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"12\" y1=\"-5.4\" x2=\"27\" y2=\"-5.4\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><\/g><path d=\"M6 -5.5 L30 -5.5 L30 5.5 L6 5.5 Z\" fill=\"#f1f3f5\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><path d=\"M-6 -10 L6 -10 L6 10 L-6 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.609\" stroke-linejoin=\"round\"/><line x1=\"-6\" y1=\"5\" x2=\"6\" y2=\"5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"-6\" y1=\"-5\" x2=\"6\" y2=\"-5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.355\" stroke-linejoin=\"round\"/><line x1=\"-31\" y1=\"0\" x2=\"34\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"0.914\" stroke-linejoin=\"round\" stroke-dasharray=\"2.539 1.625\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>","reducing_union|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(0.941 0.941)\"><path d=\"M-9 -12 L9 -12 L9 12 L-9 12 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"6\" x2=\"9\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"-6\" x2=\"9\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M9 -9.2 L17 -9.2 L17 9.2 L9 9.2 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-9.2\" x2=\"11.35\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-9.2\" x2=\"13.55\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-9.2\" x2=\"15.75\" y2=\"9.2\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><path d=\"M17 -13.8 L28 -13.8 L30 -11.8 L30 11.8 L28 13.8 L17 13.8 L15 11.8 L15 -11.8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6.9\" x2=\"30\" y2=\"6.9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6.9\" x2=\"30\" y2=\"-6.9\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(0)\"><path d=\"M9 -6.4 L17 -6.4 L17 6.4 L9 6.4 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-6.4\" x2=\"11.35\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-6.4\" x2=\"13.55\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-6.4\" x2=\"15.75\" y2=\"6.4\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><path d=\"M17 -9.6 L28 -9.6 L30 -7.6 L30 7.6 L28 9.6 L17 9.6 L15 7.6 L15 -7.6 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"4.8\" x2=\"30\" y2=\"4.8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-4.8\" x2=\"30\" y2=\"-4.8\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><\/g><line x1=\"-34\" y1=\"0\" x2=\"34\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"0.956\" stroke-linejoin=\"round\" stroke-dasharray=\"2.656 1.7\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>","union|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 20)\"><g transform=\"scale(0.941 0.941)\"><path d=\"M-9 -11 L9 -11 L9 11 L-9 11 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"5.5\" x2=\"9\" y2=\"5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"-9\" y1=\"-5.5\" x2=\"9\" y2=\"-5.5\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><g transform=\"rotate(0)\"><path d=\"M9 -8 L17 -8 L17 8 L9 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-8\" x2=\"11.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-8\" x2=\"13.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-8\" x2=\"15.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><path d=\"M17 -12 L28 -12 L30 -10 L30 10 L28 12 L17 12 L15 10 L15 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6\" x2=\"30\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6\" x2=\"30\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(180)\"><path d=\"M9 -8 L17 -8 L17 8 L9 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"9.95\" y1=\"-8\" x2=\"11.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"12.15\" y1=\"-8\" x2=\"13.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"14.35\" y1=\"-8\" x2=\"15.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><path d=\"M17 -12 L28 -12 L30 -10 L30 10 L28 12 L17 12 L15 10 L15 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.637\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"6\" x2=\"30\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><line x1=\"15\" y1=\"-6\" x2=\"30\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.372\" stroke-linejoin=\"round\"/><\/g><line x1=\"-34\" y1=\"0\" x2=\"34\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"0.956\" stroke-linejoin=\"round\" stroke-dasharray=\"2.656 1.7\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>","union_tee|bt":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 70 40\" aria-hidden=\"true\"><g transform=\"translate(0 40) scale(1 -1)\"><g transform=\"translate(35 12.488)\"><g transform=\"scale(0.791 0.791)\"><path d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\" fill=\"#c2c9d0\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><g transform=\"rotate(180)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(0)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><g transform=\"rotate(90)\"><path d=\"M10 -8 L18 -8 L18 8 L10 8 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"10.95\" y1=\"-8\" x2=\"12.35\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"13.15\" y1=\"-8\" x2=\"14.55\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"15.35\" y1=\"-8\" x2=\"16.75\" y2=\"8\" fill=\"none\" stroke=\"#7d868e\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><path d=\"M18 -12 L29 -12 L31 -10 L31 10 L29 12 L18 12 L16 10 L16 -10 Z\" fill=\"#dde1e5\" stroke=\"#2b2f33\" stroke-width=\"0.759\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"6\" x2=\"31\" y2=\"6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><line x1=\"16\" y1=\"-6\" x2=\"31\" y2=\"-6\" fill=\"none\" stroke=\"#2b2f33\" stroke-width=\"0.443\" stroke-linejoin=\"round\"/><\/g><line x1=\"-35\" y1=\"0\" x2=\"35\" y2=\"0\" fill=\"none\" stroke=\"#1f6fb2\" stroke-width=\"1.138\" stroke-linejoin=\"round\" stroke-dasharray=\"3.162 2.024\"/><\/g><\/g><rect x=\"54.5\" y=\"30.5\" width=\"14\" height=\"8\" rx=\"2\" fill=\"#1f6fb2\" stroke=\"none\"/><text transform=\"translate(61.5 32.8) scale(1 -1)\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"5.5\" font-weight=\"700\" fill=\"#ffffff\">BT<\/text><\/g><\/svg>"};
+const KINDS = [["back_ferrule","Back Ferrule"],["bulkhead_lock_nut","Bulkhead Lock Nut"],["bulkhead_union","Bulkhead Union"],["cap","Cap"],["female_connector","Female Connector (Tube x FNPT)"],["ferrule_set","Ferrule Set (Front + Back)"],["front_ferrule","Front Ferrule"],["male_connector","Male Connector (Tube x MNPT)"],["nut","Nut"],["plug","Plug"],["port_connector","Port Connector"],["reducer","Reducer (Fitting x Tube Stub)"],["reducing_elbow","Reducing Elbow (Fitting x Tube Stub)"],["reducing_port_connector","Reducing Port Connector"],["reducing_union","Reducing Union"],["union","Straight Union"],["union_cross","Union Cross"],["union_elbow","Union Elbow"],["union_tee","Union Tee"],["vcr_bulkhead_connector","VCR Bulkhead Connector (Male VCR x Tube)"],["vcr_female_connector","VCR Female Connector (Female VCR x Tube)"],["vcr_gasket","VCR Gasket"],["vcr_male_connector","VCR Male Connector (Male VCR x Tube)"],["vcr_retainer_gasket","VCR Retainer Gasket"],["vcr_side_load_gasket","VCR Side-Load Retainer Gasket"]];
+const INFO = {"built":"2026-10-21","parts":90,"sources":"Swagelok catalogs MS-01-140 Rev AJ and MS-01-24 Rev X (VCR)"};
+const STORE_KEY = "fittings-stockroom/v1";
+const SIZES = [["all", "All sizes"], ["1/16 in", "1/16"], ["1/8 in", "1/8"], ["1/4 in", "1/4"]];
+const SHOWS = [["all", "All parts"], ["reorder", "Needs reorder"], ["nomin", "No min yet"], ["uncounted", "Not counted"]];
+const STATUS_LABEL = { out: "Out", low: "Low", ok: "OK", nomin: "No min", uncounted: "Not counted", unset: "Not set up" };
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------------------------------------------------------------- state
+let storageOK = true;
+function emptyState() { return { version: 1, items: {}, custom: [], hidden: [], lastBackup: null, updated: null }; }
+function normalize(s) {
+  const d = emptyState();
+  if (!s || typeof s !== "object") return d;
+  d.items = s.items && typeof s.items === "object" ? s.items : {};
+  d.custom = Array.isArray(s.custom) ? s.custom.filter((p) => p && p.pn) : [];
+  d.hidden = Array.isArray(s.hidden) ? s.hidden : [];
+  d.lastBackup = s.lastBackup || null;
+  d.updated = s.updated || null;
+  return d;
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    return raw ? normalize(JSON.parse(raw)) : emptyState();
+  } catch (e) { storageOK = false; return emptyState(); }
+}
+let state = load();
+let saveTimer = null;
+function saveNow() {
+  state.updated = new Date().toISOString();
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); storageOK = true; }
+  catch (e) { storageOK = false; }
+  renderSaveStatus();
+}
+function save() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 250); }
+window.addEventListener("beforeunload", () => { if (saveTimer) { clearTimeout(saveTimer); saveNow(); } });
+
+const blankItem = () => ({ loc: "", min: null, onHand: null, orderQty: null, counted: null, note: "" });
+const getItem = (pn) => state.items[pn] || blankItem();
+function editItem(pn) { if (!state.items[pn]) state.items[pn] = blankItem(); return state.items[pn]; }
+const toNum = (v) => { if (v === "" || v === null || v === undefined) return null; const n = Math.floor(Number(v)); return Number.isFinite(n) && n >= 0 ? n : null; };
+
+function statusOf(it) {
+  const { min, onHand } = it;
+  if (onHand == null) return min == null ? "unset" : "uncounted";
+  if (min == null) return onHand === 0 ? "out" : "nomin";
+  if (onHand === 0 && min > 0) return "out";
+  if (onHand < min) return "low";
+  return "ok";
+}
+const needsOrder = (st) => st === "out" || st === "low";
+function orderQtyOf(it) {
+  if (it.orderQty != null) return it.orderQty;
+  if (it.min != null) return Math.max(it.min - (it.onHand || 0), 1);
+  return null;
+}
+
+// ---------------------------------------------------------------- parts
+function allParts() { return CATALOG.concat(state.custom.map((p) => ({ ...p, custom: true }))); }
+const isHidden = (pn) => state.hidden.includes(pn);
+function sizeClass(od) { return { "1/16 in": "s116", "1/8 in": "s18", "1/4 in": "s14" }[od] || "sx"; }
+function drawingFor(p) {
+  if (!p.kind) return "";
+  return DRAWINGS[p.kind + (p.bt ? "|bt" : "")] || DRAWINGS[p.kind] || "";
+}
+const hexText = (v) => {
+  const t = String(v || "").trim();
+  if (!t || t === "—") return '<span class="na">—</span>';
+  if (t.toLowerCase() === "not listed") return '<span class="na" title="Not listed in the Swagelok catalog">n/l</span>';
+  if (t.toLowerCase() === "none") return '<span class="na">none</span>';
+  return esc(t);
+};
+
+// ---------------------------------------------------------------- view state
+const ui = { q: "", size: "all", cat: "all", show: "all", showHidden: false, open: new Set() };
+function matches(p, it, ignoreShow = false) {
+  if (!ui.showHidden && isHidden(p.pn)) return false;
+  if (ui.size !== "all" && p.od !== ui.size) return false;
+  if (ui.cat !== "all" && p.cat !== ui.cat) return false;
+  if (!ignoreShow) {
+    const st = statusOf(it);
+    if (ui.show === "reorder" && !needsOrder(st)) return false;
+    if (ui.show === "nomin" && it.min != null) return false;
+    if (ui.show === "uncounted" && it.onHand != null) return false;
+  }
+  if (ui.q) {
+    const hay = [p.pn, p.desc, p.cat, p.end, p.od, p.mat, it.loc, it.note, p.bt ? "bored through bt" : ""].join(" ").toLowerCase();
+    if (!ui.q.split(/\s+/).every((w) => hay.includes(w))) return false;
+  }
+  return true;
+}
+function visibleParts() { return allParts().filter((p) => matches(p, getItem(p.pn))); }
+
+// ---------------------------------------------------------------- render
+function renderControls() {
+  const parts = allParts().filter((p) => ui.showHidden || !isHidden(p.pn));
+  $("#size-seg").innerHTML = SIZES.map(([v, label]) => {
+    const dot = v === "all" ? "" : `<span class="dot ${sizeClass(v)}"></span>`;
+    return `<button type="button" data-size="${esc(v)}" aria-pressed="${ui.size === v}">${dot}${esc(label)}</button>`;
+  }).join("");
+  const counts = { all: 0, reorder: 0, nomin: 0, uncounted: 0 };
+  for (const p of parts) {
+    const it = getItem(p.pn);
+    if (!matches(p, it, true)) continue;
+    counts.all++;
+    if (needsOrder(statusOf(it))) counts.reorder++;
+    if (it.min == null) counts.nomin++;
+    if (it.onHand == null) counts.uncounted++;
+  }
+  $("#show-seg").innerHTML = SHOWS.map(([v, label]) =>
+    `<button type="button" data-show="${v}" aria-pressed="${ui.show === v}">${esc(label)}<span class="n">${counts[v]}</span></button>`).join("");
+  const cats = [...new Set(parts.map((p) => p.cat))];
+  if (ui.cat !== "all" && !cats.includes(ui.cat)) ui.cat = "all";
+  $("#cat").innerHTML = `<option value="all">All categories</option>` +
+    cats.map((c) => `<option value="${esc(c)}"${ui.cat === c ? " selected" : ""}>${esc(c)}</option>`).join("");
+  $("#cat-list").innerHTML = [...new Set(allParts().map((p) => p.cat))].map((c) => `<option value="${esc(c)}">`).join("");
+  renderReorderBadge();
+}
+function renderReorderBadge() {
+  const n = reorderParts().length;
+  const b = $("#reorder-count");
+  b.textContent = n;
+  b.classList.toggle("zero", n === 0);
+}
+
+function rowHTML(p) {
+  const it = getItem(p.pn);
+  const st = statusOf(it);
+  const svg = drawingFor(p);
+  const tile = svg ? `<div class="tile">${svg}</div>` : `<div class="tile empty">No drawing</div>`;
+  const meta = [];
+  if (p.mat && p.mat !== "316 SS") meta.push(esc(p.mat));
+  if (p.custom) meta.push("Added by you");
+  if (isHidden(p.pn)) meta.push("Hidden");
+  const open = ui.open.has(p.pn);
+  const counted = it.counted ? `<span class="counted">Counted ${esc(fmtDate(it.counted))}</span>` : "";
+  let html = `<tr class="part${isHidden(p.pn) ? " is-hidden" : ""}" data-pn="${esc(p.pn)}">
+    <td class="tab"><span class="${sizeClass(p.od)}"></span></td>
+    <td class="pic">${tile}</td>
+    <td class="id">
+      <div class="pn">${esc(p.pn)}</div>
+      <div class="desc">${esc(p.desc)}${p.bt ? '<span class="bt">Bored through</span>' : ""}</div>
+      ${meta.length ? `<div class="meta">${meta.join(", ")}</div>` : ""}
+      <button type="button" class="more-btn" data-act="toggle" aria-expanded="${open}">${open ? "Hide details" : (it.note ? "Details and note" : "Details")}</button>
+    </td>
+    <td class="size">${esc(p.od || "—")}</td>
+    <td class="end">${esc(p.end || "—")}</td>
+    <td class="hex"><div class="h"><span>Nut</span><span>${hexText(p.nutHex)}</span><span>Body</span><span>${hexText(p.bodyHex)}</span></div></td>
+    <td class="loc"><input class="cell" data-field="loc" value="${esc(it.loc)}" placeholder="Bin" aria-label="Location for ${esc(p.pn)}"></td>
+    <td class="min num"><input class="cell" type="number" min="0" inputmode="numeric" data-field="min" value="${it.min ?? ""}" aria-label="Min qty for ${esc(p.pn)}"></td>
+    <td class="onhand num"><div class="stepper">
+      <button type="button" data-act="dec" aria-label="One less ${esc(p.pn)}">−</button>
+      <input class="cell" type="number" min="0" inputmode="numeric" data-field="onHand" value="${it.onHand ?? ""}" aria-label="On hand for ${esc(p.pn)}">
+      <button type="button" data-act="inc" aria-label="One more ${esc(p.pn)}">+</button>
+    </div></td>
+    <td class="order num"><input class="cell" type="number" min="0" inputmode="numeric" data-field="orderQty" value="${it.orderQty ?? ""}" placeholder="${orderQtyPlaceholder(it)}" aria-label="Order qty for ${esc(p.pn)}"></td>
+    <td class="status"><span class="chip ${st}">${STATUS_LABEL[st]}</span>${counted}</td>
+  </tr>`;
+  if (open) html += detailHTML(p, it);
+  return html;
+}
+function orderQtyPlaceholder(it) { const q = it.min != null ? Math.max(it.min - (it.onHand || 0), 1) : null; return q == null ? "" : `auto ${q}`; }
+function detailHTML(p, it) {
+  const hexBits = [];
+  if (p.hexNote) hexBits.push(`<p>${esc(p.hexNote)}</p>`);
+  if (p.hexSource) hexBits.push(`<p class="meta">Source: ${esc(p.hexSource)}</p>`);
+  const hideBtn = isHidden(p.pn)
+    ? `<button type="button" data-act="unhide">Show this part again</button>`
+    : `<button type="button" data-act="hide">Hide this part</button>`;
+  const delBtn = p.custom ? `<button type="button" class="danger" data-act="delete">Delete this part</button>` : "";
+  return `<tr class="detail" data-pn="${esc(p.pn)}"><td colspan="11"><div class="detail-grid">
+    <div>
+      <h3>About this part</h3>
+      <p>${esc(p.desc)}${p.bt ? ", bored through" : ""}. ${esc(p.od || "")}${p.end && p.end !== "—" ? " to " + esc(p.end) : ""}. ${esc(p.mat || "")}</p>
+      ${hexBits.join("")}
+      <div class="detail-actions">${hideBtn}${delBtn}</div>
+    </div>
+    <div>
+      <h3><label for="note-${esc(p.pn)}">Note</label></h3>
+      <textarea class="cell" id="note-${esc(p.pn)}" rows="3" data-field="note" placeholder="Supplier, lead time, where else it's stored…">${esc(it.note)}</textarea>
+    </div>
+  </div></td></tr>`;
+}
+
+function renderRows() {
+  const parts = visibleParts();
+  const groups = new Map();
+  for (const p of parts) { if (!groups.has(p.cat)) groups.set(p.cat, []); groups.get(p.cat).push(p); }
+  let html = "";
+  for (const [cat, list] of groups) {
+    html += `<tr class="group"><td colspan="11">${esc(cat)}<span class="n">${list.length} part${list.length === 1 ? "" : "s"}</span></td></tr>`;
+    html += list.map(rowHTML).join("");
+  }
+  $("#rows").innerHTML = html;
+  const empty = $("#empty");
+  if (!parts.length) {
+    empty.hidden = false;
+    empty.innerHTML = ui.show === "reorder" && !ui.q
+      ? "Nothing needs reordering in this view. Parts show up here once their on-hand count drops below their min."
+      : `No parts match this view. <button type="button" data-cmd="clear-filters">Clear search and filters</button>`;
+  } else empty.hidden = true;
+}
+function render() { renderControls(); renderRows(); renderSaveStatus(); }
+
+function updateRowStatus(pn) {
+  const row = document.querySelector(`tr.part[data-pn="${CSS.escape(pn)}"]`);
+  if (!row) return;
+  const it = getItem(pn);
+  const st = statusOf(it);
+  const counted = it.counted ? `<span class="counted">Counted ${esc(fmtDate(it.counted))}</span>` : "";
+  row.querySelector("td.status").innerHTML = `<span class="chip ${st}">${STATUS_LABEL[st]}</span>${counted}`;
+  const oq = row.querySelector('input[data-field="orderQty"]');
+  if (oq) oq.placeholder = orderQtyPlaceholder(it);
+  renderControlsCountsOnly();
+}
+function renderControlsCountsOnly() {
+  // refresh filter counts and the reorder badge without rebuilding the table rows
+  renderControls();
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" });
+}
+function renderSaveStatus() {
+  const el = $("#save-status");
+  $("#storage-warn").hidden = storageOK;
+  const when = state.updated ? `Last change saved ${fmtDate(state.updated)} at ${new Date(state.updated).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}.` : "No changes yet.";
+  const backup = state.lastBackup ? `Last backup file saved ${fmtDate(state.lastBackup)}.` : "No backup file saved yet.";
+  el.textContent = storageOK ? `Changes save automatically in this browser. ${when} ${backup}` : `Changes are not being saved in this browser. ${backup}`;
+  const hasData = Object.keys(state.items).length || state.custom.length || state.hidden.length;
+  const days = state.lastBackup ? (Date.now() - new Date(state.lastBackup)) / 864e5 : Infinity;
+  const nudge = $("#backup-nudge");
+  if (storageOK && hasData && days > 7 && state.updated && (!state.lastBackup || new Date(state.updated) > new Date(state.lastBackup))) {
+    nudge.hidden = false;
+    $("#backup-nudge-text").textContent = state.lastBackup
+      ? `Your last backup file is from ${fmtDate(state.lastBackup)}. Save a new one so this week's counts aren't only in this browser.`
+      : "Your counts are only saved in this browser so far. Save a backup file and keep it with this app.";
+  } else nudge.hidden = true;
+}
+$("#subtitle").textContent = `Swagelok tube fittings, 1/16 to 1/4 in, ${CATALOG.length} catalog parts. Set a bin, a min and an on-hand count for each part; anything below its min goes on the reorder list.`;
+$("#build-info").textContent = `Parts list built ${INFO.built}. Hex sizes from ${INFO.sources}. Drawings are generic, not to scale.`;
+
+// ---------------------------------------------------------------- events: table
+const rowsEl = $("#rows");
+rowsEl.addEventListener("input", (e) => {
+  const el = e.target;
+  const field = el.dataset.field;
+  if (!field) return;
+  const pn = el.closest("tr").dataset.pn;
+  const it = editItem(pn);
+  if (field === "loc" || field === "note") it[field] = el.value;
+  else {
+    it[field] = toNum(el.value);
+    if (field === "onHand") it.counted = it.onHand == null ? null : new Date().toISOString();
+  }
+  save();
+  if (field !== "loc" && field !== "note") updateRowStatus(pn);
+});
+rowsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const pn = btn.closest("tr").dataset.pn;
+  const act = btn.dataset.act;
+  if (act === "inc" || act === "dec") {
+    const it = editItem(pn);
+    const cur = it.onHand ?? 0;
+    it.onHand = act === "inc" ? cur + 1 : Math.max(cur - 1, 0);
+    it.counted = new Date().toISOString();
+    const input = btn.parentElement.querySelector("input");
+    input.value = it.onHand;
+    save(); updateRowStatus(pn);
+  } else if (act === "toggle") {
+    ui.open.has(pn) ? ui.open.delete(pn) : ui.open.add(pn);
+    renderRows();
+    const again = document.querySelector(`tr.part[data-pn="${CSS.escape(pn)}"] [data-act="toggle"]`);
+    if (again) again.focus();
+  } else if (act === "hide") {
+    if (!state.hidden.includes(pn)) state.hidden.push(pn);
+    ui.open.delete(pn); saveNow(); render(); toast(`${pn} hidden. Turn on "Show hidden parts" to bring it back.`);
+  } else if (act === "unhide") {
+    state.hidden = state.hidden.filter((x) => x !== pn); saveNow(); render(); toast(`${pn} is back in the list.`);
+  } else if (act === "delete") {
+    confirmAction(`Delete ${pn}?`, `This removes the part you added and its counts. It can't be undone unless you restore a backup file.`, "Delete part", () => {
+      state.custom = state.custom.filter((p) => p.pn !== pn);
+      delete state.items[pn];
+      state.hidden = state.hidden.filter((x) => x !== pn);
+      ui.open.delete(pn); saveNow(); render(); toast(`${pn} deleted.`);
+    });
+  }
+});
+rowsEl.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if (e.key !== "Enter" || !el.matches("input.cell")) return;
+  e.preventDefault();
+  const field = el.dataset.field;
+  const inputs = [...rowsEl.querySelectorAll(`tr.part input[data-field="${field}"]`)];
+  const i = inputs.indexOf(el);
+  const next = inputs[i + (e.shiftKey ? -1 : 1)];
+  if (next) { next.focus(); next.select && next.select(); }
+  else el.blur();
+});
+rowsEl.addEventListener("focusin", (e) => { if (e.target.matches('input.cell[type="number"]')) e.target.select(); });
+
+// ---------------------------------------------------------------- events: controls
+$("#q").addEventListener("input", (e) => { ui.q = e.target.value.trim().toLowerCase(); renderControls(); renderRows(); });
+$("#size-seg").addEventListener("click", (e) => { const b = e.target.closest("button[data-size]"); if (!b) return; ui.size = b.dataset.size; render(); });
+$("#show-seg").addEventListener("click", (e) => { const b = e.target.closest("button[data-show]"); if (!b) return; ui.show = b.dataset.show; render(); });
+$("#cat").addEventListener("change", (e) => { ui.cat = e.target.value; render(); });
+$("#show-hidden").addEventListener("change", (e) => { ui.showHidden = e.target.checked; render(); });
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-cmd]");
+  if (b) { const menu = $("#backup-menu"); menu.open = false; runCommand(b.dataset.cmd); }
+  const closer = e.target.closest("[data-close]");
+  if (closer) closer.closest("dialog").close();
+  const menu = $("#backup-menu");
+  if (menu.open && !e.target.closest("#backup-menu")) menu.open = false;
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && !e.target.matches("input, textarea, select")) { e.preventDefault(); $("#q").focus(); }
+  if (e.key === "Escape" && $("#backup-menu").open) $("#backup-menu").open = false;
+});
+
+function runCommand(cmd) {
+  if (cmd === "backup-save") saveBackup();
+  else if (cmd === "backup-restore") $("#file-backup").click();
+  else if (cmd === "csv-export") exportCSV();
+  else if (cmd === "csv-import") $("#file-csv").click();
+  else if (cmd === "print-count") printCount();
+  else if (cmd === "print-reorder") printReorder();
+  else if (cmd === "reorder-copy") copyReorder();
+  else if (cmd === "reorder-csv") exportReorderCSV();
+  else if (cmd === "clear-filters") { ui.q = ""; $("#q").value = ""; ui.size = "all"; ui.cat = "all"; ui.show = "all"; render(); }
+}
+
+// ---------------------------------------------------------------- reorder
+function reorderParts() {
+  return allParts().filter((p) => !isHidden(p.pn) && needsOrder(statusOf(getItem(p.pn))));
+}
+function reorderRows() {
+  return reorderParts().map((p) => { const it = getItem(p.pn); return { p, it, qty: orderQtyOf(it) }; });
+}
+$("#btn-reorder").addEventListener("click", () => {
+  const list = reorderRows();
+  $("#reorder-meta").textContent = list.length ? `${list.length} part${list.length === 1 ? "" : "s"} below min` : "";
+  $("#reorder-body").innerHTML = list.length ? `<table class="simple"><thead><tr>
+      <th>Part number</th><th>Description</th><th>Location</th><th class="num">On hand</th><th class="num">Min</th><th class="num">Order</th></tr></thead><tbody>
+      ${list.map(({ p, it, qty }) => `<tr><td><strong>${esc(p.pn)}</strong></td><td>${esc(p.desc)}${p.bt ? ", bored through" : ""}</td><td>${esc(it.loc || "—")}</td>
+        <td class="num">${it.onHand ?? "—"}</td><td class="num">${it.min ?? "—"}</td><td class="num"><strong>${qty ?? "set a min"}</strong></td></tr>`).join("")}
+      </tbody></table>`
+    : `<p class="empty-state">Nothing to reorder. A part lands here when its on-hand count is below its min, or at zero.</p>`;
+  $("#dlg-reorder").showModal();
+});
+function copyReorder() {
+  const lines = [["Part number", "Description", "Location", "On hand", "Min", "Order qty"].join("\t")]
+    .concat(reorderRows().map(({ p, it, qty }) => [p.pn, p.desc + (p.bt ? ", bored through" : ""), it.loc, it.onHand ?? "", it.min ?? "", qty ?? ""].join("\t")));
+  const text = lines.join("\n");
+  const done = () => toast("Reorder list copied. Paste it into an email or spreadsheet.");
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) { toast("Couldn't copy. Use Export CSV instead."); }
+  ta.remove();
+}
+
+// ---------------------------------------------------------------- add part
+$("#kind-select").innerHTML = `<option value="">No drawing</option>` + KINDS.map(([k, label]) => `<option value="${esc(k)}">${esc(label)}</option>`).join("");
+$("#btn-add").addEventListener("click", () => { $("#add-form").reset(); $("#add-error").hidden = true; $("#dlg-add").showModal(); $("#add-form").pn.focus(); });
+$("#add-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const pn = f.pn.value.trim().toUpperCase();
+  const err = $("#add-error");
+  if (!pn || !f.cat.value.trim() || !f.desc.value.trim()) { err.textContent = "Part number, category and description are required."; err.hidden = false; return; }
+  if (allParts().some((p) => p.pn.toUpperCase() === pn)) { err.textContent = `${pn} is already in the list. Search for it to update its counts.`; err.hidden = false; return; }
+  state.custom.push({
+    pn, cat: f.cat.value.trim(), desc: f.desc.value.trim(), bt: false, od: f.od.value.trim(), end: f.end.value.trim() || "—",
+    mat: f.mat.value.trim(), nutHex: f.nutHex.value.trim(), bodyHex: f.bodyHex.value.trim(), hexNote: "", hexSource: "Added by you", kind: f.kind.value,
+  });
+  saveNow(); $("#dlg-add").close(); ui.q = pn.toLowerCase(); $("#q").value = pn; render(); toast(`${pn} added.`);
+});
+
+// ---------------------------------------------------------------- confirm + toast
+let confirmFn = null;
+function confirmAction(title, text, okLabel, fn) {
+  $("#confirm-title").textContent = title; $("#confirm-text").textContent = text; $("#confirm-ok").textContent = okLabel;
+  confirmFn = fn; $("#dlg-confirm").showModal();
+}
+$("#confirm-ok").addEventListener("click", () => { $("#dlg-confirm").close(); if (confirmFn) confirmFn(); confirmFn = null; });
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+// ---------------------------------------------------------------- files
+const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const today = () => localDate();
+function download(name, text, type) {
+  const blob = new Blob([text], { type });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function saveBackup() {
+  state.lastBackup = new Date().toISOString();
+  const payload = { app: "fittings-stockroom", savedAt: state.lastBackup, partsListBuilt: INFO.built, state };
+  download(`fittings-stockroom-backup-${today()}.json`, JSON.stringify(payload, null, 1), "application/json");
+  saveNow(); toast("Backup file saved to your Downloads folder.");
+}
+$("#file-backup").addEventListener("change", async (e) => {
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  let data;
+  try { data = JSON.parse(await file.text()); } catch (err) { toast("That file isn't a stockroom backup. Choose a .json file saved by this app."); return; }
+  const incoming = data && data.app === "fittings-stockroom" ? normalize(data.state) : null;
+  if (!incoming) { toast("That file isn't a stockroom backup. Choose a .json file saved by this app."); return; }
+  const n = Object.keys(incoming.items).length;
+  confirmAction("Restore this backup?", `The backup from ${fmtDate(data.savedAt)} has entries for ${n} part${n === 1 ? "" : "s"}. It replaces everything currently in this app.`, "Restore backup", () => {
+    state = incoming; saveNow(); render(); toast("Backup restored.");
+  });
+});
+
+function csvCell(v) {
+  const s = String(v ?? "");
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+const asText = (v) => (v && /^[\d\s/]+$/.test(v) ? `="${v}"` : v || "");  // stop Excel turning 5/16 into a date
+function exportCSV() {
+  const head = ["Category", "Part Number", "Description", "Bored Through", "Tube OD", "Second End", "Material", "Nut Hex (in)", "Body Hex (in)",
+    "Location", "Min Qty", "Qty On Hand", "Order Qty", "Status", "Last Counted", "Notes", "Hidden"];
+  const lines = [head.map(csvCell).join(",")];
+  for (const p of allParts()) {
+    const it = getItem(p.pn);
+    lines.push([p.cat, p.pn, p.desc, p.bt ? "Yes" : "", p.od, p.end, p.mat, asText(p.nutHex), asText(p.bodyHex), it.loc, it.min ?? "", it.onHand ?? "",
+      it.orderQty ?? "", STATUS_LABEL[statusOf(it)], it.counted ? localDate(new Date(it.counted)) : "", it.note, isHidden(p.pn) ? "Yes" : ""].map(csvCell).join(","));
+  }
+  download(`fittings-stockroom-${today()}.csv`, "﻿" + lines.join("\r\n"), "text/csv");
+  toast("Spreadsheet saved to your Downloads folder.");
+}
+function exportReorderCSV() {
+  const lines = [["Part Number", "Description", "Location", "Qty On Hand", "Min Qty", "Order Qty"].map(csvCell).join(",")]
+    .concat(reorderRows().map(({ p, it, qty }) => [p.pn, p.desc + (p.bt ? ", bored through" : ""), it.loc, it.onHand ?? "", it.min ?? "", qty ?? ""].map(csvCell).join(",")));
+  download(`fittings-reorder-${today()}.csv`, "﻿" + lines.join("\r\n"), "text/csv");
+  toast("Reorder list saved to your Downloads folder.");
+}
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  text = text.replace(/^﻿/, "");
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((v) => v.trim() !== ""));
+}
+$("#file-csv").addEventListener("change", async (e) => {
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  const rows = parseCSV(await file.text());
+  if (rows.length < 2) { toast("That CSV has no rows to import."); return; }
+  const head = rows[0].map((h) => h.trim().toLowerCase());
+  const col = (...names) => head.findIndex((h) => names.includes(h));
+  const iPn = col("part number", "part no.", "part no", "pn");
+  if (iPn < 0) { toast('Import needs a "Part Number" column.'); return; }
+  const iLoc = col("location", "bin"), iMin = col("min qty", "min"), iOn = col("qty on hand", "on hand"), iOrd = col("order qty"), iNote = col("notes", "note");
+  const known = new Map(allParts().map((p) => [p.pn.toUpperCase(), p.pn]));
+  let updated = 0; const missing = [];
+  const clean = (v) => String(v ?? "").replace(/^="(.*)"$/, "$1").trim();
+  const plan = [];
+  for (const r of rows.slice(1)) {
+    const raw = clean(r[iPn]).toUpperCase();
+    if (!raw) continue;
+    const pn = known.get(raw);
+    if (!pn) { missing.push(raw); continue; }
+    plan.push([pn, r]);
+  }
+  const apply = () => {
+    for (const [pn, r] of plan) {
+      const it = editItem(pn); let changed = false;
+      if (iLoc >= 0 && clean(r[iLoc]) !== "") { it.loc = clean(r[iLoc]); changed = true; }
+      if (iMin >= 0 && clean(r[iMin]) !== "") { it.min = toNum(clean(r[iMin])); changed = true; }
+      if (iOn >= 0 && clean(r[iOn]) !== "") { it.onHand = toNum(clean(r[iOn])); it.counted = new Date().toISOString(); changed = true; }
+      if (iOrd >= 0 && clean(r[iOrd]) !== "") { it.orderQty = toNum(clean(r[iOrd])); changed = true; }
+      if (iNote >= 0 && clean(r[iNote]) !== "") { it.note = clean(r[iNote]); changed = true; }
+      if (changed) updated++;
+    }
+    saveNow(); render();
+    toast(`Updated ${updated} part${updated === 1 ? "" : "s"}.` + (missing.length ? ` ${missing.length} part number${missing.length === 1 ? " wasn't" : "s weren't"} in the list: ${missing.slice(0, 4).join(", ")}${missing.length > 4 ? "…" : ""}` : ""));
+  };
+  confirmAction("Import from this CSV?", `${plan.length} row${plan.length === 1 ? "" : "s"} match parts in the list. Filled-in cells replace what's in the app; blank cells are left alone.`, "Import", apply);
+});
+
+// ---------------------------------------------------------------- printing
+function printTitle(title, sub) { return `<h1>${esc(title)}</h1><p class="psub">${esc(sub)}</p>`; }
+function printCount() {
+  const parts = visibleParts();
+  const groups = new Map();
+  for (const p of parts) { if (!groups.has(p.cat)) groups.set(p.cat, []); groups.get(p.cat).push(p); }
+  let body = "";
+  for (const [cat, list] of groups) {
+    body += `<tr class="pg"><td colspan="9">${esc(cat)}</td></tr>`;
+    body += list.map((p) => { const it = getItem(p.pn); return `<tr>
+      <td class="ptile">${drawingFor(p)}</td><td><strong>${esc(p.pn)}</strong></td><td>${esc(p.desc)}${p.bt ? ", bored through" : ""}</td>
+      <td class="nw">${esc(p.od)}</td><td>${esc(p.end)}</td><td class="nw"><span class="hx">nut</span> ${hexText(p.nutHex)}<br><span class="hx">body</span> ${hexText(p.bodyHex)}</td><td>${esc(it.loc)}</td>
+      <td class="num">${it.min ?? ""}</td><td class="num"><span class="box"></span></td></tr>`; }).join("");
+  }
+  $("#print-area").innerHTML = printTitle("Count sheet", `${parts.length} parts. Printed ${new Date().toLocaleDateString()}. Counted by ____________`) +
+    `<table><thead><tr><th></th><th>Part number</th><th>Description</th><th>Size</th><th>Other end</th><th>Hex (in)</th><th>Location</th><th class="num">Min</th><th class="num">Count</th></tr></thead><tbody>${body}</tbody></table>`;
+  window.print();
+}
+function printReorder() {
+  const list = reorderRows();
+  $("#print-area").innerHTML = printTitle("Reorder list", `${list.length} parts below min. Printed ${new Date().toLocaleDateString()}.`) +
+    (list.length ? `<table><thead><tr><th>Part number</th><th>Description</th><th>Location</th><th class="num">On hand</th><th class="num">Min</th><th class="num">Order</th><th class="num">Ordered</th></tr></thead><tbody>
+    ${list.map(({ p, it, qty }) => `<tr><td><strong>${esc(p.pn)}</strong></td><td>${esc(p.desc)}${p.bt ? ", bored through" : ""}</td><td>${esc(it.loc)}</td><td class="num">${it.onHand ?? ""}</td><td class="num">${it.min ?? ""}</td><td class="num"><strong>${qty ?? ""}</strong></td><td class="num"><span class="sq"></span></td></tr>`).join("")}
+    </tbody></table>` : "<p>Nothing to reorder.</p>");
+  window.print();
+}
+
+render();
+</script>
+</body>
+</html>

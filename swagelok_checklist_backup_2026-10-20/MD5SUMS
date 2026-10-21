@@ -1,0 +1,14 @@
+4e74bc4b6033e3353f6c2c53a9c15e19  ./HANDOFF.md
+33f9562d04ef3eb1b0bb8105b75665d6  ./current/add_hex_columns.py
+6d2943d75e2aad045a51200cd401d0c0  ./current/build_checklist_pdf.py
+52f724a99193ebdaabfcbe3a8f37a8f4  ./current/build_checklist_pdf_hex.py
+96f38cd9f195425e6b89d8abe332f836  ./current/fitting_drawings.py
+9f73eeb2d0950524c39876b255420cc2  ./current/fitting_drawings_hex.py
+a92ada7b184afc949001a7f507f60779  ./current/swagelok_inventory_checklist.csv
+b5ae5608cf1ab99e354c08ebe31147aa  ./current/swagelok_inventory_checklist.pdf
+bdbf1e0de6aa35ddebd5c094fff80005  ./current/swagelok_inventory_checklist_hex.csv
+73c876ab8833bd880a82fb52ad5d01e6  ./current/swagelok_inventory_checklist_hex.pdf
+5ee438801fea86e9cc29132555c719cf  ./v1_as_is/build_checklist_pdf.py
+a95e5cca22b6a48ece38f54f05e0a1ac  ./v1_as_is/fitting_drawings.py
+41fc96292cc752724a98fb2fa9cf07a7  ./v1_as_is/swagelok_inventory_checklist.csv
+fc14ca53caab6084ba3e9f197c32e538  ./v1_as_is/swagelok_inventory_checklist.pdf

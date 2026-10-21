@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swagelok Catalog Search</title>
+<style>
+:root {
+  --bg: #f6f6f4; --surface: #ffffff; --ink: #1b1d1f; --muted: #646a70; --faint: #8b9197;
+  --line: #e2e2de; --accent: #1f5fa8; --accent-soft: #e6eef8; --mark: #ffe58a; --mark-ink: #1b1d1f;
+  --chip: #efefec; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141517; --surface: #1c1e21; --ink: #e8e9ea; --muted: #a0a6ac; --faint: #7a8086;
+    --line: #2d3034; --accent: #7fb2ee; --accent-soft: #1f2b3a; --mark: #6b5a12; --mark-ink: #fff6cf;
+    --chip: #26292d; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141517; --surface: #1c1e21; --ink: #e8e9ea; --muted: #a0a6ac; --faint: #7a8086;
+  --line: #2d3034; --accent: #7fb2ee; --accent-soft: #1f2b3a; --mark: #6b5a12; --mark-ink: #fff6cf;
+  --chip: #26292d; --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 28px 16px 80px; }
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -.01em; }
+.meta { color: var(--muted); font-size: 13px; }
+.searchbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0 10px; }
+.field { position: relative; }
+#q {
+  width: 100%; font: 17px/1.3 var(--sans); padding: 13px 44px 13px 14px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; outline: none; box-shadow: var(--shadow);
+}
+#q:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+#clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--faint);
+  font-size: 20px; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: none; }
+#clear:hover { background: var(--chip); color: var(--ink); }
+.facets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.facet { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 3px 10px;
+  font: 13px/1.4 var(--sans); cursor: pointer; }
+.facet span { color: var(--faint); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.facet[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.facet[aria-pressed="true"] span { color: inherit; opacity: .8; }
+.status { color: var(--muted); font-size: 13px; margin: 6px 2px 10px; min-height: 20px; }
+.status b { color: var(--ink); font-weight: 600; }
+.notice { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 10px; }
+ol.results { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.r { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+.r > button.head { all: unset; display: block; width: 100%; box-sizing: border-box; padding: 11px 14px 12px; cursor: pointer; border-radius: 10px; }
+.r > button.head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.crumb { font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; justify-content: space-between; }
+.crumb .path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crumb .pg { flex: none; font-variant-numeric: tabular-nums; color: var(--faint); }
+.title { font-weight: 600; margin: 2px 0 3px; }
+.snip { color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
+.snip, .full { word-break: normal; }
+mark { background: var(--mark); color: var(--mark-ink); border-radius: 2px; padding: 0 1px; }
+.parts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.pn { font: 12.5px/1.6 var(--mono); background: var(--chip); color: var(--ink); border: 0; border-radius: 5px; padding: 0 6px; cursor: pointer; }
+.pn.hit { background: var(--mark); color: var(--mark-ink); }
+.body { border-top: 1px solid var(--line); padding: 12px 14px 14px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.btn { display: inline-block; text-decoration: none; font-size: 13px; font-weight: 550; padding: 5px 11px; border-radius: 7px;
+  background: var(--accent); color: var(--surface); border: 0; cursor: pointer; }
+.btn.ghost { background: var(--chip); color: var(--ink); }
+.hint { font-size: 12px; color: var(--faint); }
+.full { white-space: pre-wrap; font-size: 13.5px; line-height: 1.55; max-height: 60vh; overflow: auto; background: var(--bg);
+  border-radius: 8px; padding: 10px 12px; overflow-wrap: anywhere; }
+.more { display: block; margin: 14px auto 0; }
+.intro { display: grid; gap: 18px; }
+.tips { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tips h2, .toc h2 { font-size: 14px; margin: 0 0 8px; font-weight: 650; }
+.tips ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+.tips li { margin: 3px 0; }
+.tips code, .ex { font: 13px var(--mono); background: var(--chip); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+.ex { border: 0; cursor: pointer; }
+.toc details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; }
+.toc summary { padding: 9px 14px; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; gap: 10px; }
+.toc summary .pg { font-weight: 400; color: var(--faint); font-size: 13px; font-variant-numeric: tabular-nums; }
+.toc ul { list-style: none; margin: 0; padding: 0 14px 10px; }
+.toc li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 2px 0; }
+.toc li a { color: var(--ink); text-decoration: none; }
+.toc li a:hover { color: var(--accent); text-decoration: underline; }
+.toc li .pg { color: var(--faint); font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+.toc .d2 { padding-left: 16px; } .toc .d3 { padding-left: 32px; } .toc .d4 { padding-left: 48px; }
+.err { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+kbd { font: 12px var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+@media (max-width: 560px) { .wrap { padding-top: 18px; } .crumb { flex-direction: column; gap: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Swagelok Catalog Search</h1>
+    <div class="meta" id="meta">Loading catalog…</div>
+  </header>
+  <div class="searchbar">
+    <div class="field">
+      <input id="q" type="search" autocomplete="off" spellcheck="false" autofocus
+             placeholder='Part number or words, e.g. SS-400-6 or "ball valve" 1/4 NPT' aria-label="Search the catalog">
+      <button id="clear" title="Clear (Esc)" aria-label="Clear search">×</button>
+    </div>
+    <div class="facets" id="facets"></div>
+  </div>
+  <div class="status" id="status"></div>
+  <main id="out"></main>
+</div>
+
+<script src="search-data.js" charset="utf-8"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const C = window.CATALOG;
+  if (!C) {
+    $('meta').textContent = '';
+    $('out').innerHTML = '<div class="err"><b>No index found.</b><br>search-data.js is missing from this folder. ' +
+      'Run <code>python3 build_index.py</code> here to create it.</div>';
+    return;
+  }
+
+  const SEP = ' › ';
+  const PAGE_SIZE = 50;
+  const PART_RE = /(?<![A-Za-z0-9.\-])([A-Z0-9][A-Z0-9.]*(?:-[A-Z0-9][A-Z0-9.]*)+)(?![A-Za-z0-9\-])/g;
+  const LOOKS_PART = /^[a-z0-9][a-z0-9.]*(-[a-z0-9.]+)+$/;
+
+  const pages = C.pages;                       // [doc, page, sectionIdx, text]
+  const N = pages.length;
+  const flat = pages.map(p => p[3].replace(/\s+/g, ' '));
+  const low = flat.map(s => s.toLowerCase());
+  const secLow = C.sections.map(s => s.toLowerCase());
+  const multiDoc = C.docs.length > 1;
+
+  // Category = top bookmark level (plus file name when several PDFs are indexed).
+  const catNames = [], catIdx = new Map();
+  const pageCat = pages.map(p => {
+    const top = (C.sections[p[2]] || '').split(SEP)[0] || 'Other';
+    const name = multiDoc && !top ? C.docs[p[0]].title : top;
+    if (!catIdx.has(name)) { catIdx.set(name, catNames.length); catNames.push(name); }
+    return catIdx.get(name);
+  });
+
+  const totalPages = C.docs.reduce((a, d) => a + d.pages, 0);
+  $('meta').textContent = `${totalPages.toLocaleString()} pages · ${C.docs.length} PDF${C.docs.length > 1 ? 's' : ''} · indexed ${C.built}`;
+
+  const esc = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pdfHref = (d, pg) => encodeURI(C.docs[d].file).replace(/#/g, '%23') + '#page=' + pg;
+
+  function normQuery(q) {
+    return q.normalize('NFKC').replace(/[‐-―−]/g, '-').replace(/[⁄∕]/g, '/')
+            .replace(/[“”]/g, '"').toLowerCase();
+  }
+
+  function parse(q) {
+    const out = [], re = /"([^"]+)"?|(\S+)/g; let m;
+    q = normQuery(q);
+    while ((m = re.exec(q))) {
+      let t = m[1] !== undefined ? m[1].trim().replace(/\s+/g, ' ') : m[2].replace(/^[,;:()'"]+|[,;:()'"]+$/g, '');
+      if (t && !out.includes(t)) out.push(t);
+    }
+    return out;
+  }
+
+  function matcher(t) {
+    const body = reEsc(t).replace(/ /g, '\\s+');
+    const start = /^[a-z0-9]/.test(t) ? '(?<![a-z0-9])' : '';
+    return {
+      t, body: start + body,
+      re: new RegExp(start + body, 'g'),
+      one: new RegExp(start + body),
+      whole: new RegExp(start + body + '(?![a-z0-9])'),
+      part: LOOKS_PART.test(t) && /\d/.test(t),
+    };
+  }
+
+  function search(q) {
+    const terms = parse(q).map(matcher);
+    if (!terms.length) return null;
+    const hits = terms.map(m => {
+      const map = new Map();
+      for (let i = 0; i < N; i++) {
+        const inText = low[i].indexOf(m.t) !== -1;
+        const inSec = secLow[pages[i][2]].indexOf(m.t) !== -1;
+        if (!inText && !inSec) continue;
+        let c = 0;
+        if (inText) { m.re.lastIndex = 0; while (m.re.exec(low[i]) && c < 50) c++; }
+        const secHit = inSec && m.one.test(secLow[pages[i][2]]);
+        if (c || secHit) map.set(i, { c, secHit, exact: m.part && c > 0 && m.whole.test(low[i]) });
+      }
+      return map;
+    });
+    const scores = new Map();
+    terms.forEach((m, k) => {
+      const df = hits[k].size || 1;
+      const idf = Math.log(1 + N / df);
+      for (const [i, h] of hits[k]) {
+        const s = scores.get(i) || { n: 0, score: 0 };
+        s.n++;
+        s.score += idf * ((h.c ? 1 + Math.log(h.c) : 0) + (h.secHit ? 2 : 0) + (h.exact ? 4 : 0));
+        scores.set(i, s);
+      }
+    });
+    let best = 0;
+    for (const s of scores.values()) best = Math.max(best, s.n);
+    const res = [];
+    for (const [i, s] of scores) if (s.n === best) res.push({ i, score: s.score });
+    res.sort((a, b) => b.score - a.score || a.i - b.i);
+    const rarest = terms.map((m, k) => ({ m, df: hits[k].size || Infinity })).sort((a, b) => a.df - b.df).map(x => x.m);
+    return { terms, rarest, res, matched: best };
+  }
+
+  function hlRegex(terms) {
+    const bodies = terms.map(m => m.body).sort((a, b) => b.length - a.length);
+    return new RegExp('(?:' + bodies.join('|') + ')', 'gi');
+  }
+
+  function highlight(text, re) {
+    let out = '', last = 0;
+    re.lastIndex = 0;
+    for (const m of text.matchAll(re)) {
+      if (!m[0]) continue;
+      out += esc(text.slice(last, m.index)) + '<mark>' + esc(m[0]) + '</mark>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+
+  function snippet(i, rarest, re) {
+    const text = flat[i];
+    let at = -1;
+    for (const m of rarest) {
+      const r = new RegExp(m.body, 'i');
+      const mm = r.exec(text);
+      if (mm) { at = mm.index; break; }
+    }
+    if (at < 0) return esc(text.slice(0, 220)) + (text.length > 220 ? '…' : '');
+    let a = Math.max(0, at - 90), b = Math.min(text.length, at + 170);
+    if (a > 0) { const sp = text.indexOf(' ', a); if (sp > -1 && sp < at) a = sp + 1; }
+    if (b < text.length) { const sp = text.lastIndexOf(' ', b); if (sp > at) b = sp; }
+    return (a > 0 ? '…' : '') + highlight(text.slice(a, b), re) + (b < text.length ? '…' : '');
+  }
+
+  function pageTitle(i) {
+    const sec = C.sections[pages[i][2]];
+    if (sec) return sec.split(SEP).pop();
+    const first = pages[i][3].split('\n').find(l => l.trim().length > 3);
+    return first ? first.slice(0, 90) : 'Page ' + pages[i][1];
+  }
+
+  function partsOn(i) {
+    const out = [];
+    for (const m of pages[i][3].matchAll(PART_RE)) {
+      const p = m[1].replace(/\.+$/, '');
+      if (p.length >= 5 && /[A-Z]/.test(p) && /\d/.test(p) && !out.includes(p)) out.push(p);
+    }
+    return out;
+  }
+
+  // ---- rendering ----
+  let state = { q: '', cat: null, shown: PAGE_SIZE, result: null };
+
+  function render() {
+    const r = state.result;
+    if (!r) { renderIntro(); return; }
+    const counts = new Map();
+    for (const x of r.res) counts.set(pageCat[x.i], (counts.get(pageCat[x.i]) || 0) + 1);
+    if (state.cat !== null && !counts.has(state.cat)) state.cat = null;
+    const list = state.cat === null ? r.res : r.res.filter(x => pageCat[x.i] === state.cat);
+
+    const facets = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    $('facets').innerHTML = facets.length > 1
+      ? `<button class="facet" data-cat="" aria-pressed="${state.cat === null}">All<span>${r.res.length}</span></button>` +
+        facets.map(([c, n]) => `<button class="facet" data-cat="${c}" aria-pressed="${state.cat === c}">${esc(catNames[c])}<span>${n}</span></button>`).join('')
+      : '';
+
+    const n = list.length;
+    $('status').innerHTML = n
+      ? `<b>${n.toLocaleString()}</b> page${n === 1 ? '' : 's'}` + (state.cat !== null ? ` in ${esc(catNames[state.cat])}` : '')
+      : '';
+    const re = hlRegex(r.terms);
+    const qParts = new Set(r.terms.filter(m => m.part).map(m => m.t));
+    let html = '';
+    if (!n) {
+      html = `<div class="notice">Nothing found for <b>${esc(state.q)}</b>. Try fewer words, or part of a part number (e.g. <code>SS-400</code>).</div>`;
+    } else if (r.matched < r.terms.length) {
+      html = `<div class="notice">No page contains all ${r.terms.length} terms. Showing pages that match ${r.matched}.</div>`;
+    }
+    html += '<ol class="results">';
+    for (const x of list.slice(0, state.shown)) {
+      const [d, pg, si] = pages[x.i];
+      const sec = C.sections[si];
+      const crumb = (multiDoc ? C.docs[d].title + (sec ? SEP : '') : '') + sec.split(SEP).slice(0, -1).join(SEP);
+      const exact = partsOn(x.i).filter(p => qParts.has(p.toLowerCase()) || [...qParts].some(q => p.toLowerCase().startsWith(q + '-')));
+      html += `<li class="r" data-i="${x.i}">
+        <button class="head" aria-expanded="false">
+          <div class="crumb"><span class="path">${esc(crumb)}</span><span class="pg">PDF page ${pg}</span></div>
+          <div class="title">${esc(pageTitle(x.i))}</div>
+          <div class="snip">${snippet(x.i, r.rarest, re)}</div>
+          ${exact.length ? `<div class="parts">${exact.slice(0, 12).map(p => `<span class="pn hit">${esc(p)}</span>`).join('')}</div>` : ''}
+        </button></li>`;
+    }
+    html += '</ol>';
+    if (n > state.shown) html += `<button class="btn ghost more" id="more">Show ${Math.min(PAGE_SIZE, n - state.shown)} more of ${(n - state.shown).toLocaleString()}</button>`;
+    $('out').innerHTML = html;
+  }
+
+  function expand(li) {
+    const i = +li.dataset.i, head = li.querySelector('.head');
+    const open = li.querySelector('.body');
+    if (open) { open.remove(); head.setAttribute('aria-expanded', 'false'); return; }
+    const [d, pg] = pages[i];
+    const re = state.result ? hlRegex(state.result.terms) : null;
+    const parts = partsOn(i);
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.innerHTML = `
+      <div class="actions">
+        <a class="btn" href="${pdfHref(d, pg)}" target="_blank" rel="noopener">Open PDF at page ${pg}</a>
+        <span class="hint">${esc(C.docs[d].file)}</span>
+      </div>
+      ${parts.length ? `<div class="parts" style="margin:0 0 10px">${parts.slice(0, 80).map(p => `<button class="pn" data-q="${esc(p)}" title="Search for ${esc(p)}">${esc(p)}</button>`).join('')}${parts.length > 80 ? `<span class="hint">+${parts.length - 80} more</span>` : ''}</div>` : ''}
+      <div class="full">${re ? highlight(pages[i][3], re) : esc(pages[i][3])}</div>`;
+    li.appendChild(body);
+    head.setAttribute('aria-expanded', 'true');
+    const m = body.querySelector('.full mark');
+    if (m) body.querySelector('.full').scrollTop = Math.max(0, m.offsetTop - 60);
+  }
+
+  function renderIntro() {
+    $('facets').innerHTML = '';
+    $('status').innerHTML = '';
+    const examples = ['SS-400-6', '"ball valve" 1/4 NPT', 'needle valve PTFE', '"pressure rating"', 'SS-400'];
+    let html = `<div class="intro"><div class="tips"><h2>How to search</h2><ul>
+      <li>Type part numbers as printed, like <code>SS-400-6</code>. A partial number such as <code>SS-400</code> finds every variant.</li>
+      <li>Words match the start of words: <code>valv</code> finds valve and valves. All words must appear on the page.</li>
+      <li>Use quotes for an exact phrase: <code>"needle valve"</code>.</li>
+      <li>Click a result to read the whole page, see its part numbers, and open the PDF there. <kbd>/</kbd> jumps to the search box, <kbd>Esc</kbd> clears it.</li>
+    </ul><p style="margin:10px 0 0">Try: ${examples.map(e => `<button class="ex" data-q='${esc(e)}'>${esc(e)}</button>`).join(' ')}</p></div>`;
+    if (C.toc.length) {
+      html += '<div class="toc"><h2>Contents</h2>';
+      C.docs.forEach((doc, d) => {
+        const entries = C.toc.filter(t => t[0] === d);
+        if (!entries.length) return;
+        if (multiDoc) html += `<h2 style="margin-top:14px;color:var(--muted)">${esc(doc.title)}</h2>`;
+        let group = null;
+        const flush = () => { if (group) html += group.items.length
+          ? `<details><summary><span>${esc(group.title)}</span><span class="pg">p. ${group.page}</span></summary><ul>${group.items.join('')}</ul></details>`
+          : `<details><summary><a href="${pdfHref(d, group.page)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${esc(group.title)}</a><span class="pg">p. ${group.page}</span></summary></details>`; };
+        for (const [, depth, title, page] of entries) {
+          if (depth === 0) { flush(); group = { title, page, items: [] }; continue; }
+          if (!group) group = { title: doc.title, page: 1, items: [] };
+          if (depth > 3) continue;
+          group.items.push(`<li class="d${depth}"><a href="${pdfHref(d, page)}" target="_blank" rel="noopener">${esc(title)}</a><span class="pg">p. ${page}</span></li>`);
+        }
+        flush();
+      });
+      html += '</div>';
+    }
+    $('out').innerHTML = html + '</div>';
+  }
+
+  // ---- wiring ----
+  const q = $('q');
+  let timer = 0;
+  function run(push) {
+    state.q = q.value;
+    state.shown = PAGE_SIZE;
+    state.result = search(state.q);
+    $('clear').style.display = q.value ? 'block' : 'none';
+    try { history.replaceState(null, '', q.value ? '#q=' + encodeURIComponent(q.value) : location.pathname); } catch (e) {}
+    render();
+    if (push) window.scrollTo(0, 0);
+  }
+  q.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => run(false), 140); });
+  q.addEventListener('keydown', e => { if (e.key === 'Escape') { q.value = ''; run(true); } });
+  $('clear').addEventListener('click', () => { q.value = ''; run(true); q.focus(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); q.select(); }
+  });
+  function setQuery(v) { q.value = v; run(true); }
+  document.addEventListener('click', e => {
+    const f = e.target.closest('.facet');
+    if (f) { state.cat = f.dataset.cat === '' ? null : +f.dataset.cat; state.shown = PAGE_SIZE; render(); return; }
+    const pn = e.target.closest('[data-q]');
+    if (pn) { setQuery(pn.dataset.q); return; }
+    if (e.target.id === 'more') { state.shown += PAGE_SIZE; render(); return; }
+    const head = e.target.closest('.r > .head');
+    if (head) expand(head.parentElement);
+  });
+  window.addEventListener('hashchange', () => {
+    const v = decodeURIComponent((location.hash.match(/^#q=(.*)$/) || [])[1] || '');
+    if (v !== q.value) setQuery(v);
+  });
+  const initial = decodeURIComponent((location.hash.match(/^#q=(.*)$/) || [])[1] || '');
+  q.value = initial;
+  run(false);
+})();
+</script>
+</body>
+</html>
